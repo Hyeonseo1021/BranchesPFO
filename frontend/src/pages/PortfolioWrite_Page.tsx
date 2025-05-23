@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '../components/ui/card';
+import { Button } from '../components/ui/buttons';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/router';
 
 export default function PortfolioPage() {
   const router = useRouter();
 
-  const [certificates, setCertificates] = useState([
+  const [certificates, setCertificates] = useState<string[]>([
+    '정보처리기사 / 2025.06.13 / 상반기',
+    '컴퓨터활용능력 2급 / 2025.06.13 / 상반기'
   ]);
 
   const addCertificate = () => {
-    setCertificates([...certificates, '']);
+    setCertificates(prev => [...prev, '']);
   };
 
   const [selectedItems, setSelectedItems] = useState({
@@ -24,26 +26,23 @@ export default function PortfolioPage() {
     community: false
   });
 
-  const toggleItem = (key) => {
+  const toggleItem = (key: keyof typeof selectedItems) => {
     setSelectedItems(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <div className="bg-white">
         <header className="flex justify-between items-center px-6 py-4">
-          <button onClick={() => router.push('/')}>
-            <img src="/logo.png" alt="Logo" className="h-6" />
+          <button onClick={() => router.push('/')}> 
+            <img src="Branches_2.0_Logo" alt="Logo" className="h-6" />
           </button>
           <Button variant="outline" size="sm">로그아웃</Button>
         </header>
       </div>
       <div className="h-8 bg-[#E6FCB9]"></div>
 
-      {/* Main Content */}
       <div className="flex px-10 py-10">
-        {/* Sidebar */}
         <div className="w-64">
           <div className="bg-green-700 text-white p-4 rounded-t-md">포트폴리오 및 이력서</div>
           <div className="bg-gray-100 p-4">
@@ -65,7 +64,6 @@ export default function PortfolioPage() {
           </div>
         </div>
 
-        {/* Main Panel */}
         <div className="flex-1 px-8">
           {certificates.map((cert, index) => (
             <Card key={index} className="mb-4">
@@ -85,7 +83,6 @@ export default function PortfolioPage() {
             </Card>
           ))}
 
-          {/* Add Button */}
           <div className="flex justify-center mt-4">
             <Button variant="outline" size="icon" onClick={addCertificate}>
               <Plus className="h-6 w-6" />
