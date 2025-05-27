@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/buttons';
 import { Plus } from 'lucide-react';
-import { useRouter } from 'next/router';
+import { useNavigate } from 'react-router-dom';
 
 export default function PortfolioPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const [certificates, setCertificates] = useState<string[]>([
     '정보처리기사 / 2025.06.13 / 상반기',
@@ -34,8 +34,8 @@ export default function PortfolioPage() {
     <div className="min-h-screen bg-white">
       <div className="bg-white">
         <header className="flex justify-between items-center px-6 py-4">
-          <button onClick={() => router.push('/')}> 
-            <img src="Branches_2.0_Logo" alt="Logo" className="h-6" />
+          <button onClick={() => navigate('/')}> 
+            <img src="Branches_2.0_Logo.png" alt="Logo" className="h-6" />
           </button>
           <Button variant="outline" size="sm">로그아웃</Button>
         </header>
