@@ -1,10 +1,48 @@
-import mongoose from "mongoose";
+// src/models/User.ts
+// 사용자 정보를 저장하는 Mongoose 모델입니다.
 
-const userSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },  // 로그인용 ID
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }, // 암호화된 비밀번호
+import mongoose, { Schema, Document } from "mongoose";
+
+// 사용자 스키마에 해당하는 인터페이스 정의
+export interface IUser extends Document {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  createdAt?: Date;
+}
+
+// Mongoose 스키마 정의
+const UserSchema: Schema = new Schema<IUser>({
+  id: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-export default mongoose.model("User", userSchema);
+// 모델 생성 및 내보내기
+const User = mongoose.model<IUser>("User", UserSchema);
+export default User;
