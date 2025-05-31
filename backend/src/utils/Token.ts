@@ -1,6 +1,10 @@
 import jwt from "jsonwebtoken";
 
-export const createToken = (userId: string, email: string, expiresIn: string): string => {
-    const secretKey = process.env.JWT_SECRET || "default_secret";
-    return jwt.sign({ userId, email }, secretKey, { expiresIn });
+// 토큰 만료 형식 타입 (예: 7d, 1h)
+type ExpiresIn = `${number}d` | `${number}h` | `${number}m` | `${number}s`;
+
+// JWT 토큰 생성 함수
+export const createToken = (id: string, loginId: string, expiresIn: ExpiresIn) => {
+  if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET 환경변수가 없습니다.");
+  return jwt.sign({ id, loginId }, process.env.JWT_SECRET, { expiresIn });
 };
