@@ -1,9 +1,8 @@
 import express from "express";
-import { userLogin } from "../controllers/UserController.js";
-
+import { userSignUp, userLogin } from "../controllers/UserControllers.js";
 const router = express.Router();
 
-// 로그인 요청 처리
-router.post("/login", userLogin);
+router.post("/register", userSignUp);
+router.post("/login", userLogin); 
 
 export default router;
