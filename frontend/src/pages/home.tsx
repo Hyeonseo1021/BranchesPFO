@@ -3,23 +3,16 @@ import { Card, CardContent } from '../components/ui/card';
 import { Checkbox } from "../components/ui/Checkbox";
 import { Button } from '../components/ui/buttons';
 import { useNavigate } from 'react-router-dom';
+import Header from '../pages/Header';
+import Footer from '../pages/Footer';
+
 
 export default function AIPFOPage() {
   const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-green-100 font-sans">
-      <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/home')}>
-          <img src="/Branches_2.0_Logo.png" alt="로고" className="h-8 w-auto" />
-          <h1 className="text-xl font-bold">Branches PFO</h1>
-        </div>
-        
-        <nav className="space-x-4 text-sm">
-          <a href="#" className="hover:underline">홈</a>
-          <a href="#" className="hover:underline">커뮤니티</a>
-          <a href="#" className="hover:underline">AI도우미</a>
-        </nav>
-      </header>
+      {/* ✅ 공통 Header 컴포넌트 */}
+      <Header />
 
       <section className="text-center py-10 bg-green-100">
         <h2 className="text-2xl font-bold mb-2">Powered by AI · GPT 기반 포트폴리오 생성기</h2>
@@ -67,9 +60,7 @@ export default function AIPFOPage() {
         </div>
       </main>
 
-      <footer className="bg-green-700 text-white text-center py-4 mt-10">
-        Branches FPO
-      </footer>
+      <Footer />
     </div>
   );
 }

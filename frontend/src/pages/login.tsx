@@ -60,7 +60,7 @@ export default function Login() {
           </div>
           <div className="flex justify-between mt-4 text-sm text-gray-600">
             <a href="#" className="hover:underline">아이디/비번찾기</a>
-            <a href="#" className="hover:underline">회원가입</a>
+            <a href="/register" className="hover:underline">회원가입</a>
           </div>
         </form>
       </div>
