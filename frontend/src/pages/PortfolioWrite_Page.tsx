@@ -34,10 +34,11 @@ export default function PortfolioPage() {
     <div className="min-h-screen bg-white">
       <div className="bg-white">
         <header className="flex justify-between items-center px-6 py-4">
-          <button onClick={() => navigate('/')}> 
-            <img src="Branches_2.0_Logo.png" alt="Logo" className="h-6" />
-          </button>
-          <Button variant="outline" size="sm">로그아웃</Button>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/home')}>
+            <img src="/Branches_2.0_Logo.png" alt="Logo" className="h-8 w-auto" />
+            <h1 className="text-xl font-bold">Branches PFO</h1>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => navigate('/')}>로그아웃</Button>
         </header>
       </div>
       <div className="h-8 bg-[#E6FCB9]"></div>
