@@ -15,13 +15,14 @@ export default function Login() {
     <div className="min-h-screen bg-lime-200 flex items-center justify-center">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <div className="flex flex-col items-center justify-center space-y-6 mb-8">
-          <img
-            src="Branches_2.0_Logo.png"
-            alt="Logo"
-            className="h-28 w-auto cursor-pointer"
-            onClick={() => navigate('/portfolio')}
-          />
-          <h1 className="text-4xl font-bold">LOGIN</h1>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/home')}>
+            <img
+              src="/Branches_2.0_Logo.png"
+              alt="Logo"
+              className="h-8 w-auto"
+            />
+            <h1 className="text-4xl font-bold">LOGIN</h1>
+          </div>
         </div>
 
         <form onSubmit={handleLogin}>
@@ -59,7 +60,7 @@ export default function Login() {
           </div>
           <div className="flex justify-between mt-4 text-sm text-gray-600">
             <a href="#" className="hover:underline">아이디/비번찾기</a>
-            <a href="#" className="hover:underline">회원가입</a>
+            <a href="/register" className="hover:underline">회원가입</a>
           </div>
         </form>
       </div>
