@@ -1,6 +1,7 @@
 import express from "express";
 import {
   userLogin,
+  userSignUp,
   addCertificate,
   addExperience,
   setDesiredJob
@@ -8,8 +9,8 @@ import {
 
 const router = express.Router();
 
-// 로그인 요청 처리
-router.post("/login", userLogin);
+router.post("/register", userSignUp);
+router.post("/login", userLogin); 
 
 // 사용자 정보 입력 API
 router.post("/profile/certificates", addCertificate);

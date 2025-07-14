@@ -8,3 +8,4 @@ export const createToken = (id: string, loginId: string, expiresIn: ExpiresIn) =
   if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET 환경변수가 없습니다.");
   return jwt.sign({ id, loginId }, process.env.JWT_SECRET, { expiresIn });
 };
+

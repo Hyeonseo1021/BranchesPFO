@@ -1,4 +1,4 @@
- import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 // 자격증 인터페이스
 interface Certificate {
@@ -18,6 +18,7 @@ interface Experience {
 
 //  사용자 스키마에 해당하는 인터페이스 정의
 export interface IUser extends Document {
+  _id: Types.ObjectId;  // 🔥 여기가 핵심 추가 부분
   id: string;
   name: string;
   email: string;
