@@ -2,9 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
-
 import authRoutes from "./routes/UserRoutes";
 import jobkoreaRoutes from "./routes/UserRoutes"; //새로 추가
+import resumeRouter from "./routes/resume";
 
 dotenv.config();
 
@@ -18,6 +18,8 @@ app.use("/auth", authRoutes);
 
 // 잡코리아 API 라우터
 app.use("/jobkorea", jobkoreaRoutes);
+
+app.use("/api/resume", resumeRouter);
 
 const connectDB = async () => {
   try {
@@ -37,4 +39,3 @@ app.listen(PORT, async () => {
   await connectDB();
   console.log(`🚀 Server running on port ${PORT}`);
 });
-
