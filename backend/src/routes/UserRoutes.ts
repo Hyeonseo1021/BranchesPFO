@@ -13,8 +13,8 @@ router.post("/register", userSignUp);
 router.post("/login", userLogin); 
 
 // 사용자 정보 입력 API
-router.post("/profile/certificates", addCertificate);
-router.post("/profile/experiences", addExperience);
-router.post("/profile/desired-job", setDesiredJob);
+router.post("certificates", addCertificate);
+router.post("experiences", addExperience);
+router.post("desired-job", setDesiredJob);
 
 export default router;
