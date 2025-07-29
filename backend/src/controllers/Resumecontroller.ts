@@ -1,8 +1,9 @@
 // src/controllers/ResumeController.ts
 import { Request, Response } from "express";
-import { generateResumeFromPrompt } from "../utils/geminiClient";
+import { generateResumeFromPrompt } from "../utils/Client";
 import User from "../models/User";
 
+// 이력서 생성 기능
 export const generateResume = async (req: Request, res: Response) => {
   const { userId, name, experience, skills, projects, jobTitle, title } = req.body;
 
@@ -47,5 +48,36 @@ export const generateResume = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Resume generation error:", error);
     res.status(500).json({ error: "이력서 생성 실패" });
+  }
+};
+
+// 이력서 수정 기능
+export const updateResume = async (req: Request, res: Response) => {
+  const { userId, updatedContent, title } = req.body;
+  const { resumeId } = req.params;
+
+  try {
+    const user = await User.findOne({ id: userId });
+    if (!user || !user.resumes) {
+      return res.status(404).json({ message: "사용자 또는 이력서 없음" });
+    }
+
+    const resume = user.resumes.find(
+      (r) => r._id?.toString() === resumeId
+    );
+
+    if (!resume) {
+      return res.status(404).json({ message: "해당 이력서를 찾을 수 없습니다." });
+    }
+
+    resume.content = updatedContent;
+    if (title) resume.title = title;
+    resume.createdAt = new Date();
+
+    await user.save();
+
+    res.status(200).json({ message: "이력서 수정 완료", resume });
+  } catch (err: any) {
+    res.status(500).json({ message: "이력서 수정 실패", cause: err.message });
   }
 };
