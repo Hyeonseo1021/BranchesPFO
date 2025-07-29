@@ -4,7 +4,7 @@ dotenv.config();
 
 const GEMINI_API_URL = "";
 
-export async function generateResume(prompt: string) {
+export async function generateResumeFromPrompt(prompt: string) {
   try {
     const response = await axios.post(
       `${GEMINI_API_URL}?key=${process.env.GEMINI_API_KEY}`,

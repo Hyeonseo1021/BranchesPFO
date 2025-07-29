@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { hash } from "bcrypt";
+import { hash, compare } from "bcrypt";
 import User from "../models/User.js";
 import { createToken } from "../utils/Token.js";
 import { COOKIE_NAME } from "../utils/Constants.js";
@@ -10,23 +10,25 @@ export const userSignUp = async (req: Request, res: Response): Promise<void> => 
         const { id, name, email, password } = req.body;
 
         if (!id || !name || !email || !password) {
-            return res.status(400).json({ message: "모든 필드를 입력하세요." });
+            res.status(400).json({ message: "모든 필드를 입력하세요." });
+            return;
         }
 
         const existingId = await User.findOne({ id });
         if (existingId) {
-            return res.status(409).json({ message: "이미 사용 중인 아이디입니다." });
+            res.status(409).json({ message: "이미 사용 중인 아이디입니다." });
+            return;
         }
 
         const existingEmail = await User.findOne({ email });
         if (existingEmail) {
-            return res.status(409).json({ message: "이미 등록된 이메일입니다." });
+            res.status(409).json({ message: "이미 등록된 이메일입니다." });
+            return;
         }
 
         const hashedPassword = await hash(password, 10);
         const user = new User({ id, name, email, password: hashedPassword }) as InstanceType<typeof User>;
         await user.save();
-
 
         const token = createToken(user._id.toString(), user.email, "7d");
         const expires = new Date();
@@ -64,13 +66,15 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
     // 이메일로 사용자 검색
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+      res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+      return;
     }
 
-    // 비밀번호 확인
-    const isPasswordValid = await hash(password, user.password);
+    // 비밀번호 확인 (compare로 변경)
+    const isPasswordValid = await compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "비밀번호가 올바르지 않습니다." });
+      res.status(401).json({ message: "비밀번호가 올바르지 않습니다." });
+      return;
     }
 
     // JWT 토큰 생성
@@ -153,25 +157,6 @@ export const setDesiredJob = async (req: Request, res: Response): Promise<void> 
     res.status(200).json({ message: "OK", user });
   } catch (err) {
     res.status(500).json({ message: "ERROR", cause: "희망 직종 설정 실패" });
-      domain: process.env.DOMAIN || "localhost",
-      expires,
-      httpOnly: true,
-      signed: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === "production",
-    });
-
-    res.status(200).json({
-      message: "로그인 성공",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
-    });
-  } catch (error: any) {
-    console.error("로그인 서버 오류:", error);
-    res.status(500).json({ message: "서버 오류 발생", cause: error.message });
   }
 };
 
@@ -186,7 +171,7 @@ export const getJobList = async (req: Request, res: Response): Promise<void> => 
 
     const apiUrl = `https://api.jobkorea.co.kr/v1/jobs?query=${encodeURIComponent(keyword)}&apiKey=${process.env.JOBKOREA_API_KEY}`;
 
-    const response = await fetch(apiUrl);  // ✅ 내장 fetch 사용
+    const response = await fetch(apiUrl);
     const data = await response.json();
 
     res.status(200).json(data);

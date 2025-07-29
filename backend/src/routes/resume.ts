@@ -1,5 +1,5 @@
 import express from "express";
-import { generateResumeFromPrompt } from "../utils/geminiClient";
+import { generateResumeFromPrompt } from "../utils/Client";
 import User from "../models/User";
 
 const router = express.Router();
@@ -34,10 +34,12 @@ router.post("/generate", async (req, res) => {
 
     const user = await User.findOne({ id: userId });
     if (!user) {
-      return res.status(404).json({ error: "유저를 찾을 수 없습니다." });
+      res.status(404).json({ error: "유저를 찾을 수 없습니다." });
+      return;
     }
 
-    user.resumes?.push({
+    if (!user.resumes) user.resumes = [];
+    user.resumes.push({
       title: title || "AI 생성 이력서",
       content: resume,
       createdAt: new Date(),
