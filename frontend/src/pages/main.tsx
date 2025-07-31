@@ -10,7 +10,10 @@ export default function MainPage() {
             <Header />
 
             {/* Hero Section */}
-            <section className="bg-green-100 py-20 text-center">
+            <section
+  className="bg-[#DAF8AA] bg-no-repeat bg-contain bg-center h-[400px] flex items-center justify-center"
+  style={{ backgroundImage: "url('/hero-bg.png')" }}
+>
                 <div className="max-w-4xl mx-auto px-4">
                     <h1 className="text-4xl font-bold mb-4">Branches PFO</h1>
                     <p className="mb-6">브랜치 포폴은 당신의 AI기반 이력서 포트폴리오를 생성합니다</p>
@@ -26,12 +29,12 @@ export default function MainPage() {
             {/* About Section */}
             <section className="py-16 bg-white">
                 <div className="max-w-6xl mx-auto px-4 text-center">
-                    <h2 className="text-3xl font-bold mb-6">About PFO</h2>
-                    <p className="mb-10">We provide AI-supported tool assistance to help you build resumes and portfolios based on your career data.</p>
+                    <h2 className="text-3xl font-bold mb-6">Branches PFO 서비스 바로가기</h2>
+                    <p className="mb-10">Branches PFO는 Gemini 기반의 AI 시스템으로, 사용자 입력 최소화와 맞춤형 추천을 통해 이력서 및 포트폴리오 생성을 자동화합니다.</p>
                     <div className="grid grid-cols-3 gap-8">
-                        <div className="bg-gray-100 p-6 rounded shadow">💡 설계 지원</div>
-                        <div className="bg-gray-100 p-6 rounded shadow">📁 포트폴리오 생성</div>
-                        <div className="bg-gray-100 p-6 rounded shadow">📈 데이터 기반 분석</div>
+                        <div className="bg-gray-100 p-6 rounded shadow">💡  AI 자동 생성</div>
+                        <div className="bg-gray-100 p-6 rounded shadow">📁 맞춤형 포트폴리오 추천</div>
+                        <div className="bg-gray-100 p-6 rounded shadow">📈 실시간 저장 및 수정</div>
                     </div>
                 </div>
             </section>
@@ -39,7 +42,7 @@ export default function MainPage() {
             {/* Service Section */}
             <section className="py-16 bg-gray-50">
                 <div className="max-w-6xl mx-auto px-4 text-center">
-                    <h2 className="text-2xl font-semibold mb-6">WHAT I DO</h2>
+                    <h2 className="text-2xl font-semibold mb-6">주요 기능</h2>
                     <p className="mb-10 text-gray-600">resume Fotpolio</p>
                     <div className="grid grid-cols-3 gap-6">
                         <div className="bg-white p-4 rounded shadow hover:shadow-md transition">📋 이력서 관리</div>
