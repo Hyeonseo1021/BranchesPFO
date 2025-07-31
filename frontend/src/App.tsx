@@ -8,6 +8,7 @@ import MainPage from './pages/main';
 import CommunityPage from './pages/community';
 import WritePage from './pages/write';
 import { Home } from 'lucide-react';
+import CmDetail from './pages/cmdetail';
 
 function App() {
   return (
@@ -21,6 +22,8 @@ function App() {
         <Route path="/main" element={<MainPage />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/write" element={<WritePage />} />
+        <Route path="/post/:id" element={<CmDetail />} />
+
       </Routes>
     </Router>
   );
