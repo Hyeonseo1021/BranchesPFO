@@ -6,12 +6,12 @@ dotenv.config();
 // Gemini API의 정확한 URL 설정
 const GEMINI_API_URL ="";
 
+export async function generateResumeFromPrompt(prompt: string) {
 /**
  * Gemini에게 prompt를 전달하고 마크다운 이력서를 생성해 반환한다.
  * @param prompt 사용자 정보 기반으로 구성된 이력서 생성 요청 텍스트
  * @returns 마크다운 형식의 이력서 문자열
  */
-export async function generateResume(prompt: string): Promise<string> {
   try {
     const response = await axios.post(
       `${GEMINI_API_URL}?key=${process.env.GEMINI_API_KEY}`,

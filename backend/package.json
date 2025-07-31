@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "ts-node src/server.ts",
+    "dev": "ts-node-dev src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,6 +13,7 @@
   "description": "",
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
+    "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "express": "^5.1.0",
     "tailwind-variants": "^1.0.0"
