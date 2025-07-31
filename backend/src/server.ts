@@ -15,6 +15,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 // 인증 및 사용자 관련 API
 app.use("/auth", authRoutes);
 
+
 // 이력서 API
 app.use("/api/resume", resumeRouter);
 

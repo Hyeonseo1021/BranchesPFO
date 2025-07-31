@@ -6,6 +6,7 @@ import { COOKIE_NAME } from "../utils/Constants";
 
 // 회원가입
 export const userSignUp = async (req: Request, res: Response): Promise<void> => {
+
   try {
     const { id, name, email, password } = req.body;
 
@@ -69,6 +70,7 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // 비밀번호 확인 (compare로 변경)
     const isPasswordValid = await compare(password, user.password);
     if (!isPasswordValid) {
       res.status(401).json({ message: "비밀번호가 올바르지 않습니다." });

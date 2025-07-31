@@ -62,6 +62,7 @@ const ResumeSchema = new Schema<Resume>({
   createdAt: { type: Date, default: Date.now },
 }, { _id: true });
 
+
 // 메인 사용자 스키마
 const UserSchema: Schema = new Schema<IUser>({
   id: {
@@ -99,5 +100,6 @@ const UserSchema: Schema = new Schema<IUser>({
 
 // 모델 생성 및 내보내기
 const User = mongoose.model<IUser>("User", UserSchema);
+
 export default User;
 

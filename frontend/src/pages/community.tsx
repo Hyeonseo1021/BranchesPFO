@@ -29,28 +29,65 @@ export default function CommunityPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-gray-800 font-sans">
+    <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
       <Header />
 
-      <main className="max-w-5xl mx-auto px-6 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold">커뮤니티</h2>
-          <button
-  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-  onClick={() => navigate('/write')}
->
-  글쓰기
-</button>
+      <main className="flex-grow max-w-5xl w-full mx-auto px-6 py-12">
+        {/* 제목 */}
+        <h2 className="text-3xl font-bold text-center mb-12 border-b pb-4">Q&A</h2>
+
+        {/* 탭 메뉴 */}
+        <div className="flex justify-center space-x-6 mb-8 text-gray-500 text-sm">
+          <span className="hover:text-black cursor-pointer">공지사항</span>
+          <span className="hover:text-black cursor-pointer">취업게시판</span>
+          <span className="font-semibold border-b-2 border-black text-black">자유게시판</span>
+          <span className="hover:text-black cursor-pointer">포트폴리오 게시판</span>
+          <span className="hover:text-black cursor-pointer">정보공유 게시판</span>
         </div>
 
-        <div className="grid gap-6">
-          {posts.map((post) => (
-            <div key={post.id} className="border rounded-lg p-5 hover:shadow-md transition">
-              <h3 className="text-lg font-semibold mb-1">{post.title}</h3>
-              <p className="text-sm text-gray-600 mb-2">{post.summary}</p>
-              <p className="text-xs text-gray-400">작성자: {post.author}</p>
-            </div>
-          ))}
+        {/* 게시글 표 */}
+        <table className="w-full border-t border-gray-300 text-sm">
+          <thead>
+            <tr className="border-b border-gray-200 text-left">
+              <th className="py-2 px-3 w-16">No</th>
+              <th className="py-2 px-3">제목</th>
+              <th className="py-2 px-3 w-32">글쓴이</th>
+              <th className="py-2 px-3 w-32">작성일자</th>
+            </tr>
+          </thead>
+          <tbody>
+            {posts.map((post) => (
+              <tr
+                key={post.id}
+                className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                onClick={() => navigate(`/post/${post.id}`)}
+              >
+                <td className="py-2 px-3">{post.id}</td>
+                <td className="py-2 px-3">{post.title}</td>
+                <td className="py-2 px-3">{post.author}</td>
+                <td className="py-2 px-3">2025-07-31</td> {/* 예시 날짜 */}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* 검색창 + 글쓰기 버튼 */}
+        <div className="mt-8 flex justify-between items-center">
+          <div className="flex border border-gray-300 rounded px-2 py-1 w-1/2">
+            <input
+              type="text"
+              placeholder="Search"
+              className="flex-grow px-2 outline-none"
+            />
+            <button className="text-gray-500">🔍</button>
+          </div>
+
+          <button
+            className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+             onClick={() => navigate('/write')}
+          >
+            글쓰기
+          </button>
         </div>
       </main>
 
