@@ -1,12 +1,9 @@
-// src/routes/resume.ts
-import express from "express";
-import { generateResumeFromPrompt } from "../utils/Client";
+// src/controllers/ResumeController.ts
+import { Request, Response } from "express";
+import { generateResumeFromPrompt } from "../utils/geminiClient";
 import User from "../models/User";
 
-const router = express.Router();
-
-// POST /api/resume/generate
-router.post("/generate", async (req, res) => {
+export const generateResume = async (req: Request, res: Response) => {
   const { userId, name, experience, skills, projects, jobTitle, title } = req.body;
 
   const prompt = `
@@ -35,12 +32,10 @@ router.post("/generate", async (req, res) => {
 
     const user = await User.findOne({ id: userId });
     if (!user) {
-      res.status(404).json({ error: "유저를 찾을 수 없습니다." });
-      return;
+      return res.status(404).json({ error: "유저를 찾을 수 없습니다." });
     }
 
-    if (!user.resumes) user.resumes = [];
-    user.resumes.push({
+    user.resumes?.push({
       title: title || "AI 생성 이력서",
       content: resume,
       createdAt: new Date(),
@@ -53,6 +48,4 @@ router.post("/generate", async (req, res) => {
     console.error("Resume generation error:", error);
     res.status(500).json({ error: "이력서 생성 실패" });
   }
-});
-
-export default router;
+};
