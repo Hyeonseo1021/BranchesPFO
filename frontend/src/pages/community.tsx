@@ -84,10 +84,19 @@ export default function CommunityPage() {
 
           <button
             className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-             onClick={() => navigate('/write')}
+            onClick={() => {
+              const isLoggedIn = !!localStorage.getItem('token');
+              if (!isLoggedIn) {
+                alert('로그인이 필요합니다.');
+                navigate('/login');
+              } else {
+                navigate('/write');
+              }
+            }}
           >
             글쓰기
           </button>
+
         </div>
       </main>
 
