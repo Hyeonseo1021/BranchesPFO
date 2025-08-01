@@ -9,16 +9,24 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    alert(`아이디: ${username}, 비밀번호: ${password}`);
-  };
+const handleLogin = (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  if (username === 'admin' && password === 'admin123') {
+    // ✅ 로그인 성공 시 localStorage에 토큰 저장 (가짜)
+    localStorage.setItem('token', 'fake-token');
+    alert('로그인 성공! 메인 페이지로 이동합니다.');
+    navigate('/main');
+  } else {
+    alert('아이디 또는 비밀번호가 올바르지 않습니다.');
+  }
+};
 
   return (
    <div
   className="min-h-screen flex flex-col justify-between bg-[#DAF8AA] bg-no-repeat bg-center"
   style={{
-    backgroundImage: "url('/loginbanner.png')",
+    backgroundImage: "url('/images/loginbanner.png')",
     backgroundSize: 'contain',
   }}
 >
@@ -32,7 +40,7 @@ export default function Login() {
           <div className="flex flex-col items-center justify-center space-y-6 mb-8">
             <div className="flex items-center gap-2">
               <img
-                src="/Branches_2.0_Logo.png"
+                src="/images/Branches_2.0_Logo.png"
                 alt="Logo"
                 className="h-8 w-auto"
               />

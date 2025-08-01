@@ -20,7 +20,7 @@ export default function Register() {
 <div
   className="min-h-screen flex flex-col justify-between bg-[#DAF8AA] bg-no-repeat bg-center"
   style={{
-    backgroundImage: "url('/loginbanner.png')",
+    backgroundImage: "url('/images/loginbanner.png')",
     backgroundSize: 'contain', // 또는 '80%' 같이 원하는 비율
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center',
@@ -35,7 +35,7 @@ export default function Register() {
           {/* 로고 + 타이틀 */}
           <div className="flex flex-col items-center justify-center space-y-6 mb-8">
             <div className="flex items-center gap-2">
-              <img src="/Branches_2.0_Logo.png" alt="Logo" className="h-8 w-auto" />
+              <img src="/images/Branches_2.0_Logo.png" alt="Logo" className="h-8 w-auto" />
               <h1 className="text-4xl font-bold">회원가입</h1>
             </div>
           </div>
