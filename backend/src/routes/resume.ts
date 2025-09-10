@@ -1,6 +1,6 @@
-import express from "express";
-import { generateResume, updateResume } from "../controllers/ResumeController";
-const router = express.Router();
+import express, { Router } from "express";
+import { generateResume, updateResume } from "../controllers/Resumecontroller";
+const router: Router = express.Router();
 
 // 이력서 생성
 router.post("/generate", generateResume);

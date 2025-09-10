@@ -5,7 +5,7 @@ import {
   addCertificate,
   addExperience,
   setDesiredJob
-} from "../controllers/UserController.js";
+} from "../controllers/UserController";
 
 const router = express.Router();
 
