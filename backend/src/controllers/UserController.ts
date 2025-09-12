@@ -6,7 +6,6 @@ import { COOKIE_NAME } from "../utils/Constants";
 
 // 회원가입
 export const userSignUp = async (req: Request, res: Response): Promise<void> => {
-
   try {
     const { id, name, email, password } = req.body;
 
@@ -54,8 +53,8 @@ export const userSignUp = async (req: Request, res: Response): Promise<void> => 
       },
     });
   } catch (error: any) {
-    console.error("회원가입 오류:", error);
-    res.status(500).json({ message: "서버 오류 발생", cause: error.message });
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
   }
 };
 
@@ -70,7 +69,6 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 비밀번호 확인 (compare로 변경)
     const isPasswordValid = await compare(password, user.password);
     if (!isPasswordValid) {
       res.status(401).json({ message: "비밀번호가 올바르지 않습니다." });
@@ -93,8 +91,61 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({ message: "로그인 성공", name: user.name, id: user.id });
   } catch (error: any) {
-    console.error("로그인 오류:", error);
-    res.status(500).json({ message: "서버 오류 발생", cause: error.message });
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+};
+
+// 사용자 정보 조회
+export const getUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await User.findOne({ id: req.params.id });
+    if (!user) {
+      res.status(404).json({ message: "사용자 없음" });
+      return;
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+};
+
+// 사용자 정보 수정
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const updateData = { ...req.body };
+    if (updateData.password) {
+      updateData.password = await hash(updateData.password, 10);
+    }
+    const user = await User.findOneAndUpdate(
+      { id: req.params.id },
+      updateData,
+      { new: true }
+    );
+    if (!user) {
+      res.status(404).json({ message: "사용자 없음" });
+      return;
+    }
+    res.status(200).json({ message: "사용자 정보 수정 완료", user });
+  } catch (error) {
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+};
+
+// 사용자 정보 삭제
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await User.findOneAndDelete({ id: req.params.id });
+    if (!user) {
+      res.status(404).json({ message: "사용자 없음" });
+      return;
+    }
+    res.status(200).json({ message: "사용자 삭제 완료" });
+  } catch (error) {
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
   }
 };
 
@@ -112,8 +163,9 @@ export const addCertificate = async (req: Request, res: Response): Promise<void>
       return;
     }
     res.status(200).json({ message: "자격증 추가 완료", user });
-  } catch (err) {
-    res.status(500).json({ message: "자격증 추가 실패" });
+  } catch (error) {
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
   }
 };
 
@@ -131,8 +183,9 @@ export const addExperience = async (req: Request, res: Response): Promise<void> 
       return;
     }
     res.status(200).json({ message: "경력 추가 완료", user });
-  } catch (err) {
-    res.status(500).json({ message: "경력 추가 실패" });
+  } catch (error) {
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
   }
 };
 
@@ -150,8 +203,44 @@ export const setDesiredJob = async (req: Request, res: Response): Promise<void> 
       return;
     }
     res.status(200).json({ message: "희망 직종 설정 완료", user });
-  } catch (err) {
-    res.status(500).json({ message: "희망 직종 설정 실패" });
+  } catch (error) {
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+};
+
+// 주소 입력/수정
+export const setAddress = async (req: Request, res: Response): Promise<void> => {
+  const { userId, address } = req.body;
+  try {
+    const user = await User.findOneAndUpdate(
+      { id: userId },
+      { address },
+      { new: true }
+    );
+    if (!user) {
+      res.status(404).json({ message: "사용자 없음" });
+      return;
+    }
+    res.status(200).json({ message: "주소 입력/수정 완료", user });
+  } catch (error) {
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+};
+
+// 주소 조회
+export const getAddress = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await User.findOne({ id: req.params.id });
+    if (!user) {
+      res.status(404).json({ message: "사용자 없음" });
+      return;
+    }
+    res.status(200).json({ address: user.address });
+  } catch (error) {
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
   }
 };
 
@@ -171,6 +260,7 @@ export const getJobList = async (req: Request, res: Response): Promise<void> => 
 
     res.status(200).json(data);
   } catch (error: any) {
-    res.status(500).json({ message: "잡코리아 API 호출 실패", error: error.message });
+    console.error("서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
   }
 };

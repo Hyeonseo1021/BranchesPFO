@@ -37,6 +37,7 @@ export interface IUser extends Document {
   experiences?: Experience[];
   desiredJob?: string;
   resumes?: Resume[]; // ✅ 이력서 필드 추가
+  address?: string; // 주소 필드 추가
 }
 
 // 자격증 스키마
@@ -96,6 +97,7 @@ const UserSchema: Schema = new Schema<IUser>({
   experiences: [ExperienceSchema],
   desiredJob: { type: String },
   resumes: [ResumeSchema], // ✅ 이력서 필드 추가
+  address: { type: String }, // 주소 필드 추가
 });
 
 // 모델 생성 및 내보내기
