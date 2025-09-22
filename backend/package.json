@@ -15,11 +15,13 @@
     "@radix-ui/react-slot": "^1.2.3",
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "tailwind-variants": "^1.0.0"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.19",
     "ts-node-dev": "^2.0.0",
