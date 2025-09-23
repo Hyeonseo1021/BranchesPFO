@@ -6,8 +6,6 @@ import authRoutes from "./routes/UserRoutes";
 import resumeRouter from "./routes/resume";
 import communityRoutes from "./routes/CommunityRoutes"; // 경로에 공백이 없는지 확인
 import cors from "cors"; // cors 추가
-import authRoutes from "./routes/UserRoutes";
-import resumeRouter from "./routes/resume";
 import testRouter from "./routes/test";
 import chatRouter from "./routes/ChatRoutes"; // 추가
 
