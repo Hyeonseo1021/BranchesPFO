@@ -155,6 +155,183 @@ export const setDesiredJob = async (req: Request, res: Response): Promise<void> 
   }
 };
 
+// 사용자 정보 조회
+export const getUserInfo = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await User.findOne({ id: userId }).select('-password');
+    if (!user) {
+      res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+      return;
+    }
+
+    res.status(200).json({ 
+      message: "사용자 정보 조회 성공", 
+      user 
+    });
+  } catch (error: any) {
+    console.error("사용자 정보 조회 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생", cause: error.message });
+  }
+};
+
+// 사용자 정보 수정
+export const updateUserInfo = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    const { name, phone, address } = req.body;
+
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (phone) updateData.phone = phone;
+    if (address) updateData.address = address;
+
+    const user = await User.findOneAndUpdate(
+      { id: userId },
+      updateData,
+      { new: true, select: '-password' }
+    );
+
+    if (!user) {
+      res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+      return;
+    }
+
+    res.status(200).json({ 
+      message: "사용자 정보 수정 성공", 
+      user 
+    });
+  } catch (error: any) {
+    console.error("사용자 정보 수정 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생", cause: error.message });
+  }
+};
+
+// 사용자 비밀번호 변경
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({ message: "현재 비밀번호와 새 비밀번호를 입력하세요." });
+      return;
+    }
+
+    const user = await User.findOne({ id: userId });
+    if (!user) {
+      res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+      return;
+    }
+
+    // 현재 비밀번호 확인
+    const isCurrentPasswordValid = await compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      res.status(401).json({ message: "현재 비밀번호가 올바르지 않습니다." });
+      return;
+    }
+
+    // 새 비밀번호 해시화 및 저장
+    const hashedNewPassword = await hash(newPassword, 10);
+    await User.findOneAndUpdate(
+      { id: userId },
+      { password: hashedNewPassword }
+    );
+
+    res.status(200).json({ message: "비밀번호 변경 성공" });
+  } catch (error: any) {
+    console.error("비밀번호 변경 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생", cause: error.message });
+  }
+};
+
+// 사용자 계정 삭제
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      res.status(400).json({ message: "비밀번호를 입력하세요." });
+      return;
+    }
+
+    const user = await User.findOne({ id: userId });
+    if (!user) {
+      res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+      return;
+    }
+
+    // 비밀번호 확인
+    const isPasswordValid = await compare(password, user.password);
+    if (!isPasswordValid) {
+      res.status(401).json({ message: "비밀번호가 올바르지 않습니다." });
+      return;
+    }
+
+    // 사용자 삭제
+    await User.findOneAndDelete({ id: userId });
+
+    res.status(200).json({ message: "계정 삭제 성공" });
+  } catch (error: any) {
+    console.error("계정 삭제 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생", cause: error.message });
+  }
+};
+
+// 주소 검색 API (우편번호 서비스)
+export const searchAddress = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { keyword } = req.query;
+    
+    if (!keyword) {
+      res.status(400).json({ message: "검색어를 입력하세요." });
+      return;
+    }
+
+    // 우체국 우편번호 API 사용
+    const apiUrl = `https://api.odcloud.kr/api/15040431/v1/uddi:${encodeURIComponent(keyword as string)}?page=1&perPage=10&serviceKey=YOUR_API_KEY`;
+    
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    res.status(200).json({ 
+      message: "주소 검색 성공", 
+      addresses: data.data || [] 
+    });
+  } catch (error: any) {
+    console.error("주소 검색 오류:", error);
+    res.status(500).json({ message: "주소 검색 실패", error: error.message });
+  }
+};
+
+// 주소 검색 API (대체 - 공공데이터포털 우편번호 서비스)
+export const searchAddressAlternative = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { keyword } = req.query;
+    
+    if (!keyword) {
+      res.status(400).json({ message: "검색어를 입력하세요." });
+      return;
+    }
+
+    // 공공데이터포털 우편번호 서비스 API
+    const apiUrl = `http://openapi.epost.go.kr/postal/retrieveNewAdressAreaCdService/retrieveNewAdressAreaCdService/getNewAddressListAreaCd?ServiceKey=YOUR_API_KEY&searchSe=road&srchwrd=${encodeURIComponent(keyword as string)}&countPerPage=10&currentPage=1`;
+    
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    res.status(200).json({ 
+      message: "주소 검색 성공", 
+      addresses: data || [] 
+    });
+  } catch (error: any) {
+    console.error("주소 검색 오류:", error);
+    res.status(500).json({ message: "주소 검색 실패", error: error.message });
+  }
+};
+
 // 잡코리아 API 호출 (예시용)
 export const getJobList = async (req: Request, res: Response): Promise<void> => {
   try {

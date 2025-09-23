@@ -25,6 +25,15 @@ interface Resume {
   createdAt: Date;
 }
 
+// 주소 인터페이스
+interface Address {
+  zipCode: string;
+  address: string;
+  detailAddress?: string;
+  city: string;
+  state: string;
+}
+
 // 사용자 인터페이스
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -32,6 +41,8 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
+  phone?: string;
+  address?: Address;
   createdAt?: Date;
   certificates?: Certificate[];
   experiences?: Experience[];
@@ -53,6 +64,15 @@ const ExperienceSchema = new Schema<Experience>({
   startDate: { type: Date },
   endDate: { type: Date },
   description: { type: String },
+}, { _id: false });
+
+// 주소 스키마
+const AddressSchema = new Schema<Address>({
+  zipCode: { type: String, required: true },
+  address: { type: String, required: true },
+  detailAddress: { type: String },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
 }, { _id: false });
 
 // 이력서 스키마
@@ -88,6 +108,11 @@ const UserSchema: Schema = new Schema<IUser>({
     required: true,
     minlength: 6,
   },
+  phone: {
+    type: String,
+    trim: true,
+  },
+  address: AddressSchema,
   createdAt: {
     type: Date,
     default: Date.now,
