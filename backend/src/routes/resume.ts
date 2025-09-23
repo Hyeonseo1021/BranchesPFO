@@ -1,4 +1,5 @@
-import express, { RequestHandler } from "express";
+
+import express, { Router, RequestHandler } from "express";
 import { generateResume, updateResume } from "../controllers/ResumeController";
 const router = express.Router();
 

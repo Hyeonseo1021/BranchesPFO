@@ -76,7 +76,7 @@ export const updateResume = async (req: Request, res: Response) => {
 
     await user.save();
 
-    res.status(200).json({ message: "이력서 수정 완료", resume });
+    return res.status(200).json({ message: "이력서 수정 완료", resume });
   } catch (err: any) {
     res.status(500).json({ message: "이력서 수정 실패", cause: err.message });
   }
