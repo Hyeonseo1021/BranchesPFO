@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
+import axios from 'axios'; // axios 추가
 
 export default function AIChatbotPage() {
   const [messages, setMessages] = useState([
@@ -9,18 +10,35 @@ export default function AIChatbotPage() {
   const [input, setInput] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = () => {
+  const handleSend = async () => { // async로 변경
     if (!input.trim()) return;
 
-    // 사용자 메시지 추가
-    const newMessages = [...messages, { sender: 'user', text: input }];
-    setMessages(newMessages);
+    const userMessage = { sender: 'user', text: input };
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
 
-    // GPT 응답 시뮬레이션
-    setTimeout(() => {
-      setMessages(prev => [...prev, { sender: 'bot', text: 'GPT 응답입니다. (예시)' }]);
-    }, 800);
+    try {
+      // 백엔드 API에 요청
+      const response = await axios.post('http://localhost:5000/api/chat', { 
+        prompt: input
+      });
+      const botMessage = { sender: 'bot', text: response.data.response };
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error fetching bot response:', error);
+      let errorMessageText = '죄송합니다, 답변을 생성하는 데 실패했습니다.';
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          errorMessageText += ` (서버 에러: ${error.response.status})`
+        } else if (error.request) {
+          errorMessageText += ' (서버에 연결할 수 없습니다. 백엔드 서버가 실행 중인지 확인해주세요.)'
+        } else {
+          errorMessageText += ` (요청 설정 오류: ${error.message})`
+        }
+      }
+      const errorMessage = { sender: 'bot', text: errorMessageText };
+      setMessages(prev => [...prev, errorMessage]);
+    }
   };
 
   // 자동 스크롤

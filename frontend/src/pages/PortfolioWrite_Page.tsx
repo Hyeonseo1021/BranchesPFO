@@ -49,7 +49,25 @@ export default function PortfolioPage() {
     alert('저장되었습니다.');
     window.location.href = '/mypage';
   };
+const handleAddressSearch = async () => {
+    if (!address) {
+      alert('주소를 입력해주세요.');
+      return;
+    }
+    try {
+      // 백엔드 API 호출
+      const response = await fetch(`/auth/address/search?keyword=${encodeURIComponent(address)}`);
+      const data = await response.json();
 
+      // TODO: 검색 결과를 UI에 표시하는 로직을 여기에 추가합니다.
+      // 예를 들어, 검색된 주소 목록을 모달창으로 보여주고 선택하게 할 수 있습니다.
+      console.log(data);
+      alert('주소 검색 API가 호출되었습니다. (개발자 콘솔을 확인해보세요)');
+    } catch (error) {
+      console.error("주소 검색 오류:", error);
+      alert('주소 검색 중 오류가 발생했습니다.');
+    }
+  };
   const renderEditableList = (
     label: string,
     items: string[],
@@ -140,7 +158,7 @@ export default function PortfolioPage() {
         <div className="flex gap-2">
           <input value={address} onChange={(e) => setAddress(e.target.value)} className="flex-1 border p-2 rounded text-sm" />
           <button
-            onClick={() => alert('주소 검색은 백엔드 연동 예정')}
+            onClick={handleAddressSearch}
             className="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
           >
             주소 찾기

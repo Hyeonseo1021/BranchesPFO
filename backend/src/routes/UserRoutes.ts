@@ -4,23 +4,33 @@ import {
   userSignUp,
   addCertificate,
   addExperience,
-  setDesiredJob
+  setDesiredJob,
+  getUserInfo,
+  updateUserInfo,
+  changePassword,
+  deleteUser,
+  searchAddress,
+  searchAddressAlternative
 } from "../controllers/UserController";
 
 const router = express.Router();
 
-// --- 인증 API ---
-// POST /register : 회원가입
 router.post("/register", userSignUp);
-// POST /login : 로그인
 router.post("/login", userLogin); 
 
-// --- 사용자 프로필 정보 입력 API ---
-// POST /profile/certificates : 자격증 추가
+// 사용자 정보 CRUD API
+router.get("/profile/:userId", getUserInfo);
+router.put("/profile/:userId", updateUserInfo);
+router.put("/profile/:userId/password", changePassword);
+router.delete("/profile/:userId", deleteUser);
+
+// 주소 검색 API
+router.get("/address/search", searchAddress);
+router.get("/address/search-alt", searchAddressAlternative);
+
+// 사용자 정보 입력 API
 router.post("/profile/certificates", addCertificate);
-// POST /profile/experiences : 경력 추가
 router.post("/profile/experiences", addExperience);
-// POST /profile/desired-job : 희망 직종 설정
 router.post("/profile/desired-job", setDesiredJob);
 
 export default router;
