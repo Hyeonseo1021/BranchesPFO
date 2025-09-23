@@ -4,37 +4,41 @@ import User from "../models/User";
 import { createToken } from "../utils/Token";
 import { COOKIE_NAME } from "../utils/Constants";
 
-// 회원가입
+/**
+ * POST /register
+ * 사용자 회원가입을 처리합니다.
+ */
 export const userSignUp = async (req: Request, res: Response): Promise<void> => {
-
   try {
     const { id, name, email, password } = req.body;
 
+    // 입력 값 유효성 검사
     if (!id || !name || !email || !password) {
       res.status(400).json({ message: "모든 필드를 입력하세요." });
       return;
     }
 
+    // 아이디 및 이메일 중복 확인
     const existingId = await User.findOne({ id });
     if (existingId) {
       res.status(409).json({ message: "이미 사용 중인 아이디입니다." });
       return;
     }
-
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
       res.status(409).json({ message: "이미 등록된 이메일입니다." });
       return;
     }
 
+    // 비밀번호 암호화
     const hashedPassword = await hash(password, 10);
     const user = new User({ id, name, email, password: hashedPassword });
     await user.save();
 
+    // 토큰 생성 및 쿠키 설정
     const token = createToken(user._id.toString(), user.email, "7d");
     const expires = new Date();
     expires.setDate(expires.getDate() + 7);
-
     res.cookie(COOKIE_NAME, token, {
       path: "/",
       domain: process.env.DOMAIN || "localhost",
@@ -45,13 +49,10 @@ export const userSignUp = async (req: Request, res: Response): Promise<void> => 
       secure: process.env.NODE_ENV === "production",
     });
 
+    // 성공 응답
     res.status(201).json({
       message: "회원가입 성공",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
+      user: { id: user.id, name: user.name, email: user.email },
     });
   } catch (error: any) {
     console.error("회원가입 오류:", error);
@@ -59,28 +60,30 @@ export const userSignUp = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
-// 로그인
+/**
+ * POST /login
+ * 사용자 로그인을 처리합니다.
+ */
 export const userLogin = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
     if (!user) {
       res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
       return;
     }
 
-    // 비밀번호 확인 (compare로 변경)
+    // 암호화된 비밀번호 비교
     const isPasswordValid = await compare(password, user.password);
     if (!isPasswordValid) {
       res.status(401).json({ message: "비밀번호가 올바르지 않습니다." });
       return;
     }
 
+    // 토큰 생성 및 쿠키 설정
     const token = createToken(user._id.toString(), user.email, "7d");
     const expires = new Date();
     expires.setDate(expires.getDate() + 7);
-
     res.cookie(COOKIE_NAME, token, {
       path: "/",
       domain: process.env.DOMAIN || "localhost",
@@ -91,6 +94,7 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
       secure: process.env.NODE_ENV === "production",
     });
 
+    // 성공 응답
     res.status(200).json({ message: "로그인 성공", name: user.name, id: user.id });
   } catch (error: any) {
     console.error("로그인 오류:", error);
@@ -98,7 +102,10 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// 자격증 추가
+/**
+ * POST /profile/certificates
+ * 사용자의 자격증 정보를 추가합니다.
+ */
 export const addCertificate = async (req: Request, res: Response): Promise<void> => {
   const { userId, certificate } = req.body;
   try {
@@ -117,7 +124,10 @@ export const addCertificate = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// 경력 추가
+/**
+ * POST /profile/experiences
+ * 사용자의 경력 정보를 추가합니다.
+ */
 export const addExperience = async (req: Request, res: Response): Promise<void> => {
   const { userId, experience } = req.body;
   try {
@@ -136,7 +146,10 @@ export const addExperience = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// 희망 직종 설정
+/**
+ * POST /profile/desired-job
+ * 사용자의 희망 직종을 설정합니다.
+ */
 export const setDesiredJob = async (req: Request, res: Response): Promise<void> => {
   const { userId, desiredJob } = req.body;
   try {

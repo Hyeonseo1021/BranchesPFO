@@ -48,6 +48,7 @@ export interface IUser extends Document {
   experiences?: Experience[];
   desiredJob?: string;
   resumes?: Resume[]; // ✅ 이력서 필드 추가
+  bookmarks: Types.ObjectId[]; // 🔥 북마크 필드 추가
 }
 
 // 자격증 스키마
@@ -100,8 +101,6 @@ const UserSchema: Schema = new Schema<IUser>({
     type: String,
     required: true,
     unique: true,
-    lowercase: true,
-    trim: true,
   },
   password: {
     type: String,
@@ -121,6 +120,7 @@ const UserSchema: Schema = new Schema<IUser>({
   experiences: [ExperienceSchema],
   desiredJob: { type: String },
   resumes: [ResumeSchema], // ✅ 이력서 필드 추가
+  bookmarks: [{ type: Types.ObjectId, ref: "Post" }], // 🔥 북마크 필드 추가
 });
 
 // 모델 생성 및 내보내기

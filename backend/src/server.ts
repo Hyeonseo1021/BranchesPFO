@@ -2,6 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
+import authRoutes from "./routes/UserRoutes";
+import resumeRouter from "./routes/resume";
+import communityRoutes from "./routes/CommunityRoutes"; // 경로에 공백이 없는지 확인
 import cors from "cors"; // cors 추가
 import authRoutes from "./routes/UserRoutes";
 import resumeRouter from "./routes/resume";
@@ -9,19 +12,19 @@ import testRouter from "./routes/test";
 import chatRouter from "./routes/ChatRoutes"; // 추가
 
 dotenv.config();
-
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use(cors()); // cors 미들웨어 추가
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true,
+}));
 
-// 인증 및 사용자 관련 API
+// --- API 라우터 연결 ---
 app.use("/auth", authRoutes);
-
-
-// 이력서 API
 app.use("/api/resume", resumeRouter);
+app.use("/api/community", communityRoutes);
 
 // 챗봇 API
 app.use("/api", chatRouter); // 추가
@@ -29,19 +32,18 @@ app.use("/test", testRouter);
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URL!, {
-      dbName: "myDatabase",
-    });
-    console.log(" MongoDB 연결 성공");
+    await mongoose.connect(process.env.MONGO_URL!);
+    console.log("✅ MongoDB 연결 성공");
   } catch (error) {
-    console.error(" MongoDB 연결 실패:", error);
+    console.error("❌ MongoDB 연결 실패:", error);
     process.exit(1);
   }
 };
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, async () => {
-  await connectDB();
-  console.log(`🚀 Server running on port ${PORT}`);
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
+  });
 });
