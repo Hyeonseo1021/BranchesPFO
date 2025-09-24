@@ -3,16 +3,30 @@ import Header from './Header';
 import Footer from './Footer';
 import { useNavigate } from 'react-router-dom';
 import { Pencil } from 'lucide-react';
+import axios from "axios";
 
 export default function WritePage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`제목: ${title}\n내용: ${content}`);
-    navigate('/community');
+
+    try {
+const response = await axios.post(
+  "http://localhost:5000/api/community/posts",  // 👈 여기
+  { title, content },
+  { withCredentials: true }
+);
+
+      alert("게시글이 등록되었습니다!");
+      console.log("새 글:", response.data);
+      navigate("/community"); // 등록 후 커뮤니티 페이지로 이동
+    } catch (error: any) {
+      console.error("게시글 작성 오류:", error);
+      alert(error.response?.data?.message || "서버 오류로 글 등록에 실패했습니다.");
+    }
   };
 
   return (
@@ -26,7 +40,9 @@ export default function WritePage() {
             <Pencil className="w-6 h-6" />
             글쓰기 공간
           </div>
-          <p className="text-gray-600 text-sm">커뮤니티에 공유하고 싶은 내용을 자유롭게 작성해주세요</p>
+          <p className="text-gray-600 text-sm">
+            커뮤니티에 공유하고 싶은 내용을 자유롭게 작성해주세요
+          </p>
         </div>
 
         {/* 카드 형태의 작성 폼 */}
