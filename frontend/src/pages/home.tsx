@@ -46,7 +46,7 @@ export default function AIPFOPage() {
 
 
         <main className="max-w-4xl mx-auto py-10 px-4">
-          <h3 className="text-xl font-bold text-center mb-4">AI FPO에 오신것을 환영합니다 !</h3>
+          <h3 className="text-xl font-bold text-center mb-4">AI PFO에 오신것을 환영합니다 !</h3>
           <p className="text-center mb-6">
             저는 당신의 정보를 바탕으로 포트폴리오/이력서를 만들어주는 AI 브랜치에요!<br />
             먼저 원하시는 정보를 입력해주세요.

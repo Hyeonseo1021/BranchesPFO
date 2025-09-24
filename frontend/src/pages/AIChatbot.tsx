@@ -51,7 +51,7 @@ export default function AIChatbotPage() {
       <Header />
 
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold mb-4 text-center">FPO AI 도우미</h1>
+        <h1 className="text-3xl font-bold mb-4 text-center">PFO AI 도우미</h1>
 
         {/* 대화창 */}
         <div className="bg-white border rounded-md h-[500px] overflow-y-auto p-4 space-y-4">

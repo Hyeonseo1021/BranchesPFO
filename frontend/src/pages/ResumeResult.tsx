@@ -25,12 +25,12 @@ export default function ResumeResult() {
           className="text-white text-lg drop-shadow-[1px_1px_1px_rgba(0,0,0,0.4)] animate-fade-in-down"
           style={{ animationDelay: '0.3s' }}
         >
-          지금 FPO AI가 생성한 이력서를 확인해보세요
+          지금 PFO AI가 생성한 이력서를 확인해보세요
         </p>
       </section>
-{/* FPO AI 메시지 */}
+{/* PFO AI 메시지 */}
 <div className="text-center text-sm text-gray-700 italic mt-20 mb-12 animate-fade-in-down">
-  FPO AI가 <span className="font-semibold text-green-700">홍길동</span> 님의 입력 정보를 바탕으로,
+  PFO AI가 <span className="font-semibold text-green-700">홍길동</span> 님의 입력 정보를 바탕으로,
   <br />
   <span className="font-semibold">간결하고 깔끔한 이력서</span>를 원하시는 스타일에 맞춰 작성해보았어요 😊
 </div>
