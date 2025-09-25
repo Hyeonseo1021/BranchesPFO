@@ -103,7 +103,7 @@ export default function MainPage() {
             <section className="py-16 bg-gray-50">
                 <div className="max-w-6xl mx-auto px-4 text-center">
                     <h2 className="text-2xl font-semibold mb-6">주요 기능</h2>
-                    <p className="mb-10 text-gray-600">FPO의 다양한 기능들을 미리 만나보세요!</p>
+                    <p className="mb-10 text-gray-600">PFO의 다양한 기능들을 미리 만나보세요!</p>
                     <div className="grid grid-cols-3 gap-6">
                         <div className="bg-white p-4 rounded shadow hover:shadow-md transition">📋 이력서 관리</div>
                         <div

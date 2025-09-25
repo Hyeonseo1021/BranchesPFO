@@ -2,30 +2,50 @@ import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../pages/Header';
 import Footer from '../pages/Footer';
+import axios from 'axios';
 
 export default function Register() {
   const [nickname, setNickname] = useState('');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleRegister = (e: FormEvent<HTMLFormElement>) => {
+  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // 임시 알림으로 입력값 확인
-    alert(`닉네임: ${nickname}\n아이디: ${username}\n비밀번호: ${password}\n비밀번호 확인: ${confirmPassword}`);
+
+    if (password !== confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+ try {
+      const response = await axios.post("/auth/register", {
+        id: username,     // 백엔드 요구사항: 아이디
+        name: nickname,   // 백엔드 요구사항: 이름(닉네임)
+        email: email,     // ✅ 프론트에서 직접 입력한 이메일
+        password,         // 비밀번호
+      });
+
+      console.log("✅ 회원가입 성공:", response.data);
+      alert("회원가입 성공!");
+      navigate("/login");
+    } catch (error: any) {
+      console.error("❌ 회원가입 실패:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "회원가입 실패");
+    }
   };
 
   return (
-<div
-  className="min-h-screen flex flex-col justify-between bg-[#DAF8AA] bg-no-repeat bg-center"
-  style={{
-    backgroundImage: "url('/images/loginbanner.png')",
-    backgroundSize: 'contain', // 또는 '80%' 같이 원하는 비율
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center',
-  }}
->
+    <div
+      className="min-h-screen flex flex-col justify-between bg-[#DAF8AA] bg-no-repeat bg-center"
+      style={{
+        backgroundImage: "url('/images/loginbanner.png')",
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+      }}
+    >
 
       <Header />
 
@@ -65,7 +85,17 @@ export default function Register() {
                 className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
               />
             </div>
-
+   {/* 이메일 ✅ 추가 */}
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">이메일(임시 로그인 확인용)</label>
+              <input
+                type="email"
+                placeholder="이메일"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
+              />
+            </div>
             {/* 비밀번호 */}
             <div className="mb-4">
               <label className="block text-gray-700 text-sm font-bold mb-2">비밀번호</label>
