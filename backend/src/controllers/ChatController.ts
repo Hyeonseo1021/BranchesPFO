@@ -1,13 +1,13 @@
-// src/controllers/ChatController.ts
 import { Request, Response } from "express";
 import { generateTextFromPrompt } from "../utils/Client";
 
-export const generateChatResponse = async (req: Request, res: Response) => {
+export const generateChatResponse = async (req: Request, res: Response): Promise<void> => {
   console.log("Received chat request!");
   const { prompt } = req.body;
 
   if (!prompt) {
-    return res.status(400).json({ error: "Prompt is required" });
+    res.status(400).json({ error: "Prompt is required" });
+    return;
   }
 
   try {
@@ -15,6 +15,6 @@ export const generateChatResponse = async (req: Request, res: Response) => {
     res.status(200).json({ response });
   } catch (error) {
     console.error("Chat generation error:", error);
-    return res.status(500).json({ error: "Failed to generate chat response" });
+    res.status(500).json({ error: "Failed to generate chat response" });
   }
 };

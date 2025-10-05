@@ -12,19 +12,20 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/jsonwebtoken": "^9.0.10",
-    "axios": "^1.11.0",
+    "axios": "^1.12.2",
+    "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
-    "cors": "^2.8.5",
     "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.1",
-    "tailwind-variants": "^1.0.0",
-    "bcrypt": "^6.0.0",
-    "jsonwebtoken": "^9.0.2"
+    "tailwind-variants": "^1.0.0"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.9",
