@@ -13,8 +13,8 @@ const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => 
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string; email: string };
-    req.user = { id: decoded.id, email: decoded.email };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {email: string };
+    req.user = { id: decoded.email, email: decoded.email };
     next();
   } catch (error) {
     return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });

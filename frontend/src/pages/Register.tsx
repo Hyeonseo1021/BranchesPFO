@@ -6,7 +6,7 @@ import axios from 'axios';
 
 export default function Register() {
   const [nickname, setNickname] = useState('');
-  const [username, setUsername] = useState('');
+  //const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -20,11 +20,12 @@ export default function Register() {
       return;
     }
  try {
-      const response = await axios.post("/auth/register", {
-        id: username,     // 백엔드 요구사항: 아이디
+      const response = await axios.post("/auth/register", {  
         name: nickname,   // 백엔드 요구사항: 이름(닉네임)
-        email: email,     // ✅ 프론트에서 직접 입력한 이메일
+        email: email,     // 프론트에서 직접 입력한 이메일
         password,         // 비밀번호
+      }, {
+        withCredentials: true, // 쿠키 전송을 위해 필요
       });
 
       console.log("✅ 회원가입 성공:", response.data);
@@ -70,18 +71,6 @@ export default function Register() {
                 placeholder="닉네임"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
-              />
-            </div>
-
-            {/* 아이디 */}
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">아이디</label>
-              <input
-                type="text"
-                placeholder="아이디"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
                 className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
               />
             </div>

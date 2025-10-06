@@ -15,7 +15,10 @@ import {
 
 const router = express.Router();
 
-router.post("/register", userSignUp);
+router.post("/register", (req, res, next) => {
+  console.log("회원가입 라우트 진입");
+  next();
+}, userSignUp);
 router.post("/login", userLogin); 
 
 // 사용자 정보 CRUD API
