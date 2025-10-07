@@ -1,0 +1,207 @@
+// src/controllers/communityController.ts
+
+import { Request, Response } from 'express';
+import Post from '../models/Postmodel';
+import Comment from '../models/Commentmodel';
+import User from '../models/User';
+import { AuthRequest } from '../middleware/middleware';
+import { Types } from 'mongoose';
+
+// --- 게시글 컨트롤러 ---
+
+/** 모든 게시글 조회 */
+export const getAllPosts = async (req: Request, res: Response) => {
+    try {
+        const posts = await Post.find().populate('author', 'name id').sort({ createdAt: -1 });
+        res.status(200).json(posts);
+    } catch (error) {
+        res.status(500).json({ message: "서버 오류" });
+    }
+};
+
+/** 특정 게시글 조회 (조회수 증가 포함) */
+export const getPostById = async (req: Request, res: Response) => {
+    try {
+        const post = await Post.findByIdAndUpdate(req.params.postId, { $inc: { views: 1 } }, { new: true })
+            .populate('author', 'name id');
+        if (!post) {
+            return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
+        }
+        res.status(200).json(post);
+    } catch (error) {
+        res.status(500).json({ message: "서버 오류" });
+    }
+};
+
+/** 새 게시글 생성 */
+export const createPost = async (req: AuthRequest, res: Response) => {
+  try {
+    console.log("User Info : ", req.user);
+    console.log("게시글 생성 요청 본문:", req.body);
+
+    // 인증된 사용자의 아이디가 없으면 401 반환
+    if (!req.user?.id) {
+      return res.status(401).json({ message: "로그인 후 이용하세요." });
+    }
+
+    const { title, content } = req.body;
+    if (!title || !content) {
+      return res.status(400).json({ message: "제목과 내용을 모두 입력하세요." });
+    }
+
+    const newPost = new Post({
+      title,
+      content,
+      author: req.user.id,  // author 필드에 인증 사용자 id 저장
+    });
+
+    await newPost.save();
+    res.status(201).json(newPost);
+  } catch (error) {
+    console.error("게시글 생성 오류:", error);
+    res.status(500).json({ message: "서버 오류" });
+  }
+};
+
+
+/** 게시글 수정 */
+export const updatePost = async (req: AuthRequest, res: Response) => {
+    try {
+        const updatedPost = await Post.findOneAndUpdate(
+            { _id: req.params.postId, author: req.user?.id },
+            { title: req.body.title, content: req.body.content }, // title과 content 모두 수정 가능하도록 변경
+            { new: true }
+        );
+        if (!updatedPost) {
+            return res.status(404).json({ message: "게시글을 찾을 수 없거나 수정 권한이 없습니다." });
+        }
+        res.status(200).json(updatedPost);
+    } catch (error) {
+        res.status(500).json({ message: "서버 오류" });
+    }
+};
+
+/** 게시글 삭제 */
+export const deletePost = async (req: AuthRequest, res: Response) => {
+    try {
+        const deletedPost = await Post.findOneAndDelete({ _id: req.params.postId, author: req.user?.id });
+        if (!deletedPost) {
+            return res.status(404).json({ message: "게시글을 찾을 수 없거나 삭제할 권한이 없습니다." });
+        }
+        await Comment.deleteMany({ postId: deletedPost._id });
+        res.status(200).json({ message: "게시글과 관련 댓글이 성공적으로 삭제되었습니다." });
+    } catch (error) {
+        res.status(500).json({ message: "서버 오류" });
+    }
+};
+
+
+// --- 댓글 컨트롤러 ---
+
+/** 특정 게시글의 모든 댓글 조회 */
+export const getComments = async (req: Request, res: Response) => {
+    try {
+        const comments = await Comment.find({ postId: req.params.postId }).populate('author', 'name id').sort({ createdAt: 1 });
+        res.status(200).json(comments);
+    } catch (error) {
+        res.status(500).json({ message: "서버 오류" });
+    }
+};
+
+/** 댓글 생성 */
+export const createComment = async (req: AuthRequest, res: Response) => {
+    try {
+        const newComment = new Comment({
+            content: req.body.content,
+            postId: req.params.postId,
+            author: req.user?.id
+        });
+        await newComment.save();
+        const populatedComment = await newComment.populate('author', 'name id');
+        res.status(201).json(populatedComment);
+    } catch (error) {
+        res.status(500).json({ message: "서버 오류" });
+    }
+};
+
+/** 댓글 수정 */
+export const updateComment = async (req: AuthRequest, res: Response) => {
+    try {
+        const updatedComment = await Comment.findOneAndUpdate(
+            { _id: req.params.commentId, author: req.user?.id },
+            { content: req.body.content },
+            { new: true }
+        );
+        if (!updatedComment) {
+            return res.status(404).json({ message: "댓글을 찾을 수 없거나 수정할 권한이 없습니다." });
+        }
+        res.status(200).json(updatedComment);
+    } catch (error) {
+        res.status(500).json({ message: "서버 오류" });
+    }
+};
+
+/** 댓글 삭제 */
+export const deleteComment = async (req: AuthRequest, res: Response) => {
+    try {
+        const deletedComment = await Comment.findOneAndDelete({ _id: req.params.commentId, author: req.user?.id });
+        if (!deletedComment) {
+            return res.status(404).json({ message: "댓글을 찾을 수 없거나 삭제할 권한이 없습니다." });
+        }
+        res.status(200).json({ message: "댓글이 성공적으로 삭제되었습니다." });
+    } catch (error) {
+        res.status(500).json({ message: "서버 오류" });
+    }
+};
+
+
+// --- 소셜 기능 컨트롤러 ---
+
+/** 좋아요 토글 */
+export const toggleLike = async (req: AuthRequest, res: Response) => {
+    try {
+        const post = await Post.findById(req.params.postId);
+        if (!post) {
+            return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
+        }
+
+        const userObjectId = new Types.ObjectId(req.user?.id);
+        const likeIndex = post.likes.findIndex(id => id.equals(userObjectId));
+
+        if (likeIndex > -1) {
+            post.likes.splice(likeIndex, 1); // 이미 좋아요를 눌렀으면 취소
+        } else {
+            post.likes.push(userObjectId); // 아니면 좋아요 추가
+        }
+        await post.save();
+
+        res.status(200).json({ likesCount: post.likes.length, isLiked: likeIndex === -1 });
+    } catch (error) {
+        res.status(500).json({ message: "서버 오류" });
+    }
+};
+
+/** 북마크 토글 */
+export const toggleBookmark = async (req: AuthRequest, res: Response) => {
+    try {
+        const user = await User.findById(req.user?.id);
+        if (!user) {
+            return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+        }
+        
+        const postObjectId = new Types.ObjectId(req.params.postId);
+        const bookmarkIndex = user.bookmarks.findIndex(id => id.equals(postObjectId));
+
+        if (bookmarkIndex > -1) {
+            user.bookmarks.splice(bookmarkIndex, 1); // 이미 북마크했으면 취소
+        } else {
+            user.bookmarks.push(postObjectId); // 아니면 북마크 추가
+        }
+        await user.save();
+
+        res.status(200).json({ isBookmarked: bookmarkIndex === -1 });
+    } catch (error) { 
+        console.error("북마크 처리 중 오류:", error);
+        res.status(500).json({ message: "서버 오류" }); 
+    }
+};

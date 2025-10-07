@@ -6,6 +6,7 @@ import axios from 'axios';
 
 export default function Register() {
   const [nickname, setNickname] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,20 +19,20 @@ export default function Register() {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
-    try {
-      // ✅ 수정된 부분: API 경로를 '/api/auth/register'로 수정
-      const response = await axios.post("/api/auth/register", {
-        name: nickname,
-        email: email,
-        password,
+ try {
+      const response = await axios.post("/auth/register", {
+        id: username,     // 백엔드 요구사항: 아이디
+        name: nickname,   // 백엔드 요구사항: 이름(닉네임)
+        email: email,     // ✅ 프론트에서 직접 입력한 이메일
+        password,         // 비밀번호
       });
 
       console.log("✅ 회원가입 성공:", response.data);
-      alert("회원가입 성공! 로그인 페이지로 이동합니다.");
+      alert("회원가입 성공!");
       navigate("/login");
     } catch (error: any) {
       console.error("❌ 회원가입 실패:", error.response?.data || error.message);
-      alert(error.response?.data?.message || "회원가입에 실패했습니다.");
+      alert(error.response?.data?.message || "회원가입 실패");
     }
   };
 
@@ -45,9 +46,13 @@ export default function Register() {
         backgroundPosition: 'center',
       }}
     >
+
       <Header />
+
       <div className="flex flex-col items-center justify-center flex-grow">
         <div className="bg-white/80 backdrop-blur-md p-12 rounded-lg shadow-lg w-full max-w-2xl min-h-[600px] flex flex-col justify-center">
+
+          {/* 로고 + 타이틀 */}
           <div className="flex flex-col items-center justify-center space-y-6 mb-8">
             <div className="flex items-center gap-2">
               <img src="/images/Branches_2.0_Logo.png" alt="Logo" className="h-8 w-auto" />
@@ -55,7 +60,9 @@ export default function Register() {
             </div>
           </div>
 
+          {/* 회원가입 폼 */}
           <form onSubmit={handleRegister}>
+            {/* 닉네임 */}
             <div className="mb-4">
               <label className="block text-gray-700 text-sm font-bold mb-2">닉네임</label>
               <input
@@ -66,8 +73,21 @@ export default function Register() {
                 className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
               />
             </div>
+
+            {/* 아이디 */}
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">이메일</label>
+              <label className="block text-gray-700 text-sm font-bold mb-2">아이디</label>
+              <input
+                type="text"
+                placeholder="아이디"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
+              />
+            </div>
+   {/* 이메일 ✅ 추가 */}
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">이메일(임시 로그인 확인용)</label>
               <input
                 type="email"
                 placeholder="이메일"
@@ -76,6 +96,7 @@ export default function Register() {
                 className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
               />
             </div>
+            {/* 비밀번호 */}
             <div className="mb-4">
               <label className="block text-gray-700 text-sm font-bold mb-2">비밀번호</label>
               <input
@@ -86,6 +107,8 @@ export default function Register() {
                 className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
               />
             </div>
+
+            {/* 비밀번호 확인 */}
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-bold mb-2">비밀번호 확인</label>
               <input
@@ -96,6 +119,8 @@ export default function Register() {
                 className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
               />
             </div>
+
+            {/* 버튼 */}
             <div className="flex items-center justify-center">
               <button
                 type="submit"
