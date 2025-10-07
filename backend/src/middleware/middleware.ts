@@ -8,13 +8,15 @@ export interface AuthRequest extends Request {
 
 const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
   const token = req.signedCookies[COOKIE_NAME];
+  console.log("Token:", token);
   if (!token) {
     return res.status(401).json({ message: '인증되지 않았습니다. 로그인이 필요합니다.' });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {email: string };
-    req.user = { id: decoded.email, email: decoded.email };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {id: string; email: string };
+    console.log("decoded token:", decoded);
+    req.user = { id: decoded.id, email: decoded.email };
     next();
   } catch (error) {
     return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });

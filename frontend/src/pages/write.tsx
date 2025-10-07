@@ -14,18 +14,23 @@ export default function WritePage() {
     e.preventDefault();
 
     try {
-const response = await axios.post(
-  "http://localhost:5000/api/community/posts",  // 👈 여기
-  { title, content },
-  { withCredentials: true }
-);
+      const response = await axios.post(
+      "http://localhost:5000/api/community/posts",  // 👈 여기
+      { title, content },
+      { withCredentials: true }
+  );
 
       alert("게시글이 등록되었습니다!");
       console.log("새 글:", response.data);
       navigate("/community"); // 등록 후 커뮤니티 페이지로 이동
     } catch (error: any) {
       console.error("게시글 작성 오류:", error);
-      alert(error.response?.data?.message || "서버 오류로 글 등록에 실패했습니다.");
+      if (error.response?.status === 401) {
+        alert("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
+        navigate('/login');
+      } else {
+        alert(error.response?.data?.message || "서버 오류로 글 등록에 실패했습니다.");
+      }
     }
   };
 

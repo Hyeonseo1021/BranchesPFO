@@ -1,3 +1,4 @@
+import { AuthRequest } from "../middleware/middleware";
 import { Request, Response } from "express";
 import { hash, compare } from "bcrypt";
 import User from "../models/User";
@@ -104,6 +105,27 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
   } catch (error: any) {
     console.error("로그인 오류:", error);
     res.status(500).json({ message: "서버 오류 발생", cause: error.message });
+  }
+};
+
+// 사용자 인증 확인
+export const verifyUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await User.findById(req.user?.id);
+
+    if (!user) {
+      return res.status(401).json({ message: "사용자 인증에 실패했습니다." });
+    }
+
+    return res.status(200).json({ 
+      message: "인증 성공",
+      id: user.id,
+      name: user.name, 
+      email: user.email 
+    });
+  } catch (error) {
+    console.error("사용자 확인 중 오류 발생:", error);
+    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
 

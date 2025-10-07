@@ -35,16 +35,34 @@ export const getPostById = async (req: Request, res: Response) => {
 
 /** 새 게시글 생성 */
 export const createPost = async (req: AuthRequest, res: Response) => {
-    try {
-        const { title, content } = req.body;
-        const author = req.user?.id;
-        const newPost = new Post({ title, content, author });
-        await newPost.save();
-        res.status(201).json(newPost);
-    } catch (error) {
-        res.status(500).json({ message: "서버 오류" });
+  try {
+    console.log("User Info : ", req.user);
+    console.log("게시글 생성 요청 본문:", req.body);
+
+    // 인증된 사용자의 아이디가 없으면 401 반환
+    if (!req.user?.id) {
+      return res.status(401).json({ message: "로그인 후 이용하세요." });
     }
+
+    const { title, content } = req.body;
+    if (!title || !content) {
+      return res.status(400).json({ message: "제목과 내용을 모두 입력하세요." });
+    }
+
+    const newPost = new Post({
+      title,
+      content,
+      author: req.user.id,  // author 필드에 인증 사용자 id 저장
+    });
+
+    await newPost.save();
+    res.status(201).json(newPost);
+  } catch (error) {
+    console.error("게시글 생성 오류:", error);
+    res.status(500).json({ message: "서버 오류" });
+  }
 };
+
 
 /** 게시글 수정 */
 export const updatePost = async (req: AuthRequest, res: Response) => {

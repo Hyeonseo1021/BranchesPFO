@@ -1,5 +1,4 @@
 // src/routes/communityRoutes.ts
-
 import { Router } from 'express';
 import authMiddleware from '../middleware/middleware';
 import * as communityController from '../controllers/CommunityController';
