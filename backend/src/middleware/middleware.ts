@@ -9,7 +9,8 @@ export interface AuthRequest extends Request {
 const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
   const token = req.signedCookies[COOKIE_NAME];
   if (!token) {
-    return res.status(401).json({ message: '인증되지 않았습니다. 로그인이 필요합니다.' });
+    res.status(401).json({ message: '인증되지 않았습니다. 로그인이 필요합니다.' });
+    return;
   }
 
   try {
@@ -17,7 +18,9 @@ const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => 
     req.user = { id: decoded.id, email: decoded.email };
     next();
   } catch (error) {
-    return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
+    
+    res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
+    return;
   }
 };
 
