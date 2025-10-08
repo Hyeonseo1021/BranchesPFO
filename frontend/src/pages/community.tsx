@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Header from '../pages/Header';
 import Footer from '../pages/Footer';
 import { useNavigate } from 'react-router-dom';
+import axios from "axios";
 
 interface Post {
   _id: string;
@@ -31,6 +32,17 @@ export default function CommunityPage() {
   };
   fetchPosts();
 }, []);
+
+const handleWirteClick = async () => {
+  try{
+    await axios.get("http://localhost:5000/api/users/verify", { withCredentials: true });
+    navigate('/write');
+  } catch (error) {
+    console.error("로그인 상태 확인 실패 : ", error);
+    alert("로그인이 필요합니다.");
+    navigate('/login');
+  }
+};
 
   if (loading) return <p className="text-center mt-20">불러오는 중...</p>;
 

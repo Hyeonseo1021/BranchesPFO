@@ -2,6 +2,7 @@ import express from "express";
 import {
   userLogin,
   userSignUp,
+  verifyUser,
   addCertificate,
   addExperience,
   setDesiredJob,
@@ -12,11 +13,17 @@ import {
   searchAddress,
   searchAddressAlternative
 } from "../controllers/UserController";
+import  authMiddleware  from "../middleware/middleware";
 
 const router = express.Router();
 
-router.post("/register", userSignUp);
+router.post("/register", (req, res, next) => {
+  console.log("회원가입 라우트 진입");
+  next();
+}, userSignUp);
 router.post("/login", userLogin); 
+// 로그인 상태 확인
+router.get("/verify", authMiddleware, verifyUser);
 
 // 사용자 정보 CRUD API
 router.get("/profile/:userId", getUserInfo);

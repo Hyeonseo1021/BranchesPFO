@@ -1,3 +1,4 @@
+import { AuthRequest } from "../middleware/middleware";
 import { Request, Response } from "express";
 import { hash, compare } from "bcrypt";
 import User from "../models/User";
@@ -9,57 +10,62 @@ import { COOKIE_NAME } from "../utils/Constants";
  * 사용자 회원가입을 처리합니다.
  */
 export const userSignUp = async (req: Request, res: Response): Promise<void> => {
+  console.log("회원가입 API호출, 요청 바디:", req.body); // 요청 데이터 로깅
   try {
     const { id, name, email, password } = req.body;
 
-    // 입력 값 유효성 검사
     if (!id || !name || !email || !password) {
+      console.log("입력값 부족");
       res.status(400).json({ message: "모든 필드를 입력하세요." });
       return;
     }
 
-    // 아이디 및 이메일 중복 확인
+    // 중복 확인 로그 추가 가능
     const existingId = await User.findOne({ id });
+    console.log("중복 아이디 확인:", existingId);
     if (existingId) {
       res.status(409).json({ message: "이미 사용 중인 아이디입니다." });
       return;
     }
+
     const existingEmail = await User.findOne({ email });
+    console.log("중복 이메일 확인:", existingEmail);
     if (existingEmail) {
       res.status(409).json({ message: "이미 등록된 이메일입니다." });
       return;
     }
 
-    // 비밀번호 암호화
+    // 사용자 생성 및 토큰 발행 전 로그
     const hashedPassword = await hash(password, 10);
     const user = new User({ id, name, email, password: hashedPassword });
     await user.save();
+    console.log("사용자 생성 완료:", user);
 
-    // 토큰 생성 및 쿠키 설정
     const token = createToken(user._id.toString(), user.email, "7d");
     const expires = new Date();
     expires.setDate(expires.getDate() + 7);
+
     res.cookie(COOKIE_NAME, token, {
       path: "/",
-      domain: process.env.DOMAIN || "localhost",
       expires,
       httpOnly: true,
       signed: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === 'production'
     });
+    console.log("쿠키 설정 완료");
 
-    // 성공 응답
+    // 응답 전 로그
+    console.log("회원가입 성공 응답 전송");
     res.status(201).json({
       message: "회원가입 성공",
-      user: { id: user.id, name: user.name, email: user.email },
+      user: {name: user.name, email: user.email },
     });
   } catch (error: any) {
     console.error("회원가입 오류:", error);
     res.status(500).json({ message: "서버 오류 발생", cause: error.message });
   }
 };
-
 /**
  * POST /login
  * 사용자 로그인을 처리합니다.
@@ -86,7 +92,7 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
     expires.setDate(expires.getDate() + 7);
     res.cookie(COOKIE_NAME, token, {
       path: "/",
-      domain: process.env.DOMAIN || "localhost",
+      //domain: process.env.DOMAIN || "localhost",
       expires,
       httpOnly: true,
       signed: true,
@@ -95,10 +101,31 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
     });
 
     // 성공 응답
-    res.status(200).json({ message: "로그인 성공", name: user.name, id: user.id });
+    res.status(200).json({ message: "로그인 성공", name: user.name, email: user.email });
   } catch (error: any) {
     console.error("로그인 오류:", error);
     res.status(500).json({ message: "서버 오류 발생", cause: error.message });
+  }
+};
+
+// 사용자 인증 확인
+export const verifyUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await User.findById(req.user?.id);
+
+    if (!user) {
+      return res.status(401).json({ message: "사용자 인증에 실패했습니다." });
+    }
+
+    return res.status(200).json({ 
+      message: "인증 성공",
+      id: user.id,
+      name: user.name, 
+      email: user.email 
+    });
+  } catch (error) {
+    console.error("사용자 확인 중 오류 발생:", error);
+    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
 
