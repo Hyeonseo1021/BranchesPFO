@@ -13,7 +13,7 @@ import {
   searchAddress,
   searchAddressAlternative
 } from "../controllers/UserController";
-import  authMiddleware  from "../middleware/middleware";
+import  verifyToken  from "../middleware/verifyToken";
 
 const router = express.Router();
 
@@ -22,22 +22,22 @@ router.post("/register", (req, res, next) => {
   next();
 }, userSignUp);
 router.post("/login", userLogin); 
-// 로그인 상태 확인
-router.get("/verify", authMiddleware, verifyUser);
+
+router.get("/verify", verifyToken, verifyUser);
 
 // 사용자 정보 CRUD API
-router.get("/profile/:userId", getUserInfo);
-router.put("/profile/:userId", updateUserInfo);
-router.put("/profile/:userId/password", changePassword);
-router.delete("/profile/:userId", deleteUser);
+router.get("/profile/:userId", verifyToken, getUserInfo);
+router.put("/profile/:userId", verifyToken, updateUserInfo);
+router.put("/profile/:userId/password", verifyToken, changePassword);
+router.delete("/profile/:userId", verifyToken, deleteUser);
 
 // 주소 검색 API
-router.get("/address/search", searchAddress);
-router.get("/address/search-alt", searchAddressAlternative);
+router.get("/address/search", verifyToken, searchAddress);
+router.get("/address/search-alt", verifyToken, searchAddressAlternative);
 
 // 사용자 정보 입력 API
-router.post("/profile/certificates", addCertificate);
-router.post("/profile/experiences", addExperience);
-router.post("/profile/desired-job", setDesiredJob);
+router.post("/profile/certificates", verifyToken, addCertificate);
+router.post("/profile/experiences", verifyToken, addExperience);
+router.post("/profile/desired-job", verifyToken, setDesiredJob);
 
 export default router;

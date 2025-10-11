@@ -21,17 +21,21 @@ export default function CommunityPage() {
   useEffect(() => {
   const fetchPosts = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/community/posts"); // ✅ 수정
-      const data = await response.json();
-      setPosts(data);
+      const res = await axios.get("http://localhost:5000/api/community/posts", {
+        withCredentials: true,
+      });
+      console.log("게시글 응답:", res.data);
+      setPosts(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("게시글 불러오기 실패:", err);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
   };
   fetchPosts();
 }, []);
+
 
 const handleWirteClick = async () => {
   try{

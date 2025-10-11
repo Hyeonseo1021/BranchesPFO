@@ -1,25 +1,37 @@
 // src/routes/communityRoutes.ts
 import { Router } from 'express';
-import authMiddleware from '../middleware/middleware';
-import * as communityController from '../controllers/CommunityController';
+import verifyToken from '../middleware/verifyToken';
+import {
+    getAllPosts, 
+    getPostById, 
+    createPost, 
+    updatePost, 
+    deletePost, 
+    getComments,
+    createComment,
+    updateComment,
+    deleteComment,
+    toggleLike,
+    toggleBookmark
+} from '../controllers/CommunityController';
 
 const router = Router();
 
 // --- 게시글 CRUD 라우팅 ---
-router.get('/posts', communityController.getAllPosts);
-router.get('/posts/:postId', communityController.getPostById);
-router.post('/posts', authMiddleware, communityController.createPost);
-router.put('/posts/:postId', authMiddleware, communityController.updatePost);
-router.delete('/posts/:postId', authMiddleware, communityController.deletePost);
+router.get('/posts', verifyToken, getAllPosts);
+router.get('/posts/:postId', verifyToken, getPostById);
+router.post('/posts', verifyToken, createPost);
+router.put('/posts/:postId', verifyToken, updatePost);
+router.delete('/posts/:postId', verifyToken, deletePost);
 
 // --- 댓글 CRUD 라우팅 ---
-router.get('/posts/:postId/comments', communityController.getComments);
-router.post('/posts/:postId/comments', authMiddleware, communityController.createComment);
-router.put('/comments/:commentId', authMiddleware, communityController.updateComment);
-router.delete('/comments/:commentId', authMiddleware, communityController.deleteComment);
+router.get('/posts/:postId/comments', getComments);
+router.post('/posts/:postId/comments', verifyToken, createComment);
+router.put('/comments/:commentId', verifyToken, updateComment);
+router.delete('/comments/:commentId', verifyToken, deleteComment);
 
 // --- 소셜 기능 라우팅 ---
-router.post('/posts/:postId/like', authMiddleware, communityController.toggleLike);
-router.post('/posts/:postId/bookmark', authMiddleware, communityController.toggleBookmark);
+router.post('/posts/:postId/like', verifyToken, toggleLike);
+router.post('/posts/:postId/bookmark', verifyToken, toggleBookmark);
 
 export default router;

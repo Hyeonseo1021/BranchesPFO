@@ -13,7 +13,7 @@ interface Post {
 
 interface Comment {
   _id: string;
-  author?: { name: string; id: string }; // ✅ 수정: author는 객체
+  author?: { name: string; id: string };
   content: string;
   createdAt: string;
 }
@@ -26,11 +26,14 @@ export default function CmDetail() {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // 게시글 가져오기
+  // 📌 게시글 가져오기 (쿠키 포함)
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/posts/${id}`);
+        const res = await fetch(`http://localhost:5000/api/community/posts/${id}`, {
+          credentials: 'include', // ✅ 쿠키 인증 포함
+        });
+        if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
         const data = await res.json();
         setPost(data);
       } catch (err) {
@@ -42,13 +45,16 @@ export default function CmDetail() {
     fetchPost();
   }, [id]);
 
-  // 댓글 가져오기
+  // 📌 댓글 가져오기 (쿠키 포함)
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/posts/${id}/comments`);
+        const res = await fetch(`http://localhost:5000/api/community/posts/${id}/comments`, {
+          credentials: 'include', // ✅ 쿠키 인증 포함
+        });
+        if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
         const data = await res.json();
-        setComments(data);
+        setComments(Array.isArray(data) ? data : []); // ✅ 안전하게 배열만 저장
       } catch (err) {
         console.error('댓글 불러오기 실패:', err);
       }
@@ -56,18 +62,28 @@ export default function CmDetail() {
     if (id) fetchComments();
   }, [id]);
 
-  // 댓글 작성
+  // 📌 댓글 작성 (쿠키 인증 포함)
   const handleAddComment = async () => {
     if (newComment.trim() === '') return;
+
     try {
       const res = await fetch(`http://localhost:5000/api/community/posts/${id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: newComment }),
-        credentials: 'include', // 로그인 토큰 전달
+        credentials: 'include', // ✅ 쿠키 인증 포함
       });
+
+      if (res.status === 401) {
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+        return;
+      }
+
+      if (!res.ok) throw new Error(`댓글 작성 실패: ${res.status}`);
+
       const data = await res.json();
-      setComments([...comments, data]); // 새 댓글 추가
+      setComments((prev) => [...prev, data]); // 새 댓글 추가
       setNewComment('');
     } catch (err) {
       console.error('댓글 작성 실패:', err);
