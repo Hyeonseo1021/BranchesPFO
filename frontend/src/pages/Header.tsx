@@ -20,8 +20,14 @@ export default function Header() {
 
       <nav className="space-x-4 text-sm">
         <a onClick={() => navigate('/community')} className="hover:underline cursor-pointer">커뮤니티</a>
-        <a onClick={() => navigate('/aihelp')} className="hover:underline cursor-pointer">AI도우미</a>
-        <a onClick={() => navigate('/home')} className="hover:underline cursor-pointer">분석받기</a>
+        <a onClick={() => navigate('/aichatbot')} className="hover:underline cursor-pointer">AI도우미</a>
+        <a onClick={() => navigate('/aipfopage')} className="hover:underline cursor-pointer">이력서/포트폴리오 생성</a>
+          <a
+          onClick={() => navigate('/jobrecommend')}
+          className="hover:underline cursor-pointer"
+        >
+          취업 정보 추천
+        </a>
         <a
           onClick={() => {
             if (!isLoggedIn) {
