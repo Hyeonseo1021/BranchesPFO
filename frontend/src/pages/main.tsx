@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../pages/Header';
-import Footer from '../pages/Footer';
+import Header from './Header';
+import Footer from './Footer';
 import '../css/main.css';
 export default function MainPage() {
   const navigate = useNavigate();
@@ -41,17 +41,17 @@ export default function MainPage() {
 >
   <div className="max-w-4xl mx-auto px-4 text-center">
     <h1 className="text-4xl font-bold mb-4 animate-fade-in-down transition-transform duration-700 transform hover:scale-105">
-      Branches PFO
+      AI와 함께 성장하는 IT 전문가의 시작, Branches PFO
     </h1>
     <p className="mb-6 opacity-80 text-lg animate-fade-in-down" style={{ animationDelay: '0.2s', animationFillMode: 'both' }}>
-      브랜치 포폴은 당신의 AI기반 이력서 포트폴리오를 생성합니다
+     Branches PFO는 사용자의 경력과 자격 정보를 기반으로 IT기반 이력서와 포트폴리오를 완성합니다.
     </p>
     <button
       onClick={() => navigate('/home')}
       className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition-all duration-300 hover:scale-105 animate-fade-in-down"
       style={{ animationDelay: '0.4s', animationFillMode: 'both' }}
     >
-      AI 브랜치 생성기 체험하기
+      AI 이력서/포트폴리오 생성하기
     </button>
   </div>
 </section>

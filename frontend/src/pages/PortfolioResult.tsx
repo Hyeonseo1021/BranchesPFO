@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 import React, { useState } from 'react';
 import Header from '../pages/Header';
 import Footer from '../pages/Footer';
@@ -5,6 +7,7 @@ import Footer from '../pages/Footer';
 const slideStyle = "w-[1280px] h-[720px] mx-auto bg-white shadow-xl border border-gray-300 p-10 flex flex-col justify-center";
 
 export default function PortfolioResult() {
+    const navigate = useNavigate();
     const [page, setPage] = useState(0);
 
     const pages = [
@@ -112,8 +115,14 @@ export default function PortfolioResult() {
 
             {/* 수정 / 저장 버튼 */}
             <div className="flex justify-center gap-4 mt-10 mb-10">
-                <button className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700">수정하기</button>
+                <button
+  onClick={() => navigate('/portfolioedit')}
+  className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700"
+>
+  수정하기
+</button>
                 <button className="bg-gray-700 text-white px-6 py-2 rounded-lg shadow-md hover:bg-gray-800">저장하기</button>
+                <button className="bg-red-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-red-700">삭제하기</button>
             </div>
 
             <Footer />

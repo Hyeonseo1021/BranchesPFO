@@ -36,10 +36,10 @@ export default function AIPFOPage() {
           }}
         >
           <h2 className="text-3xl md:text-4xl font-bold text-white drop-shadow-[2px_2px_2px_rgba(0,0,0,0.5)] mb-4 animate-fade-in-down">
-            Powered by AI · GPT 기반 포트폴리오 생성기
+            Powered by AI · GPT 기반 이력서/포트폴리오
           </h2>
           <p className="text-white text-lg drop-shadow-[1px_1px_1px_rgba(0,0,0,0.4)] animate-fade-in-down" style={{ animationDelay: '0.3s' }}>
-            당신의 경력, 자격증 다양한 정보를 기반으로 생성하는 AI브랜치
+            사용자의 경력, 자격증 다양한 정보를 IT기반으로 포트폴리오/이력서를 생성하는 AI브랜치
           </p>
         </section>
 

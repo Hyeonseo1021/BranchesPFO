@@ -17,7 +17,7 @@ export default function PortfolioPage() {
   const [tools, setTools] = useState<string[]>([]);
   const [projects, setProjects] = useState<string[]>([]);
   const [photo, setPhoto] = useState('');
-
+const [agree, setAgree] = useState(false);
   useEffect(() => {
     setName(localStorage.getItem('mypage_name') || '');
     setBirth(localStorage.getItem('mypage_birth') || '');
@@ -34,6 +34,10 @@ export default function PortfolioPage() {
   }, []);
 
   const handleSave = () => {
+      if (!agree) {
+    alert('개인정보 수집 및 이용에 동의해주세요.');
+    return;
+  }
     localStorage.setItem('mypage_name', name);
     localStorage.setItem('mypage_birth', birth);
     localStorage.setItem('mypage_address', address);
@@ -315,11 +319,46 @@ const handleAddressSearch = async () => {
 </section>
 
 
-        {/* 경력 */}
-        <section className="bg-white border p-6 rounded mb-8 shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">경력</h3>
-          {renderEditableList('경력 사항', career, setCareer, '예: 삼성전자 / 백엔드 개발 / 2022~2023')}
-        </section>
+{/* 경력 */}
+<section className="bg-white border p-6 rounded mb-8 shadow-sm">
+  <h3 className="text-lg font-semibold mb-4">경력</h3>
+
+  {career.map((item, idx) => (
+    <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
+      <input
+        value={item}
+        onChange={(e) => {
+          const updated = [...career];
+          updated[idx] = e.target.value;
+          setCareer(updated);
+        }}
+        placeholder="예: 삼성전자 / 백엔드 개발 / 2022~2023"
+        className="w-full border p-2 rounded text-sm"
+      />
+
+      <div className="text-right">
+        <button
+          className="text-xs text-red-500"
+          onClick={() => {
+            const updated = [...career];
+            updated.splice(idx, 1);
+            setCareer(updated);
+          }}
+        >
+          삭제
+        </button>
+      </div>
+    </div>
+  ))}
+
+  <button
+    className="text-xs text-blue-600 mt-2"
+    onClick={() => setCareer((prev) => [...prev, ''])}
+  >
+    + 경력 추가
+  </button>
+</section>
+
 
         {/* 자격증 */}
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
@@ -349,15 +388,79 @@ const handleAddressSearch = async () => {
           </button>
         </section>
 
-        {/* 기술, 툴 */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white border p-6 rounded shadow-sm">
-            {renderEditableList('기술 역량', skills, setSkills, '예: JavaScript, React, Node.js')}
-          </div>
-          <div className="bg-white border p-6 rounded shadow-sm">
-            {renderEditableList('툴/도구', tools, setTools, '예: GitHub, Figma')}
-          </div>
-        </section>
+{/* 기술, 툴 */}
+<section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+  {/* 기술 역량 */}
+  <div className="bg-white border p-6 rounded shadow-sm">
+    <h3 className="font-semibold mb-2">기술 역량</h3>
+    {skills.map((skill, idx) => (
+      <div key={idx} className="flex items-center gap-2 mb-2">
+        <input
+          value={skill}
+          onChange={(e) => {
+            const updated = [...skills];
+            updated[idx] = e.target.value;
+            setSkills(updated);
+          }}
+          placeholder="예: JavaScript, React, Node.js"
+          className="flex-1 border p-2 rounded text-sm"
+        />
+        <button
+          className="text-xs text-red-500"
+          onClick={() => {
+            const updated = [...skills];
+            updated.splice(idx, 1);
+            setSkills(updated);
+          }}
+        >
+          삭제
+        </button>
+      </div>
+    ))}
+    <button
+      className="text-xs text-blue-600 mt-1"
+      onClick={() => setSkills((prev) => [...prev, ''])}
+    >
+      + 추가
+    </button>
+  </div>
+
+  {/* 툴/도구 */}
+  <div className="bg-white border p-6 rounded shadow-sm">
+    <h3 className="font-semibold mb-2">툴 / 도구</h3>
+    {tools.map((tool, idx) => (
+      <div key={idx} className="flex items-center gap-2 mb-2">
+        <input
+          value={tool}
+          onChange={(e) => {
+            const updated = [...tools];
+            updated[idx] = e.target.value;
+            setTools(updated);
+          }}
+          placeholder="예: GitHub, Figma"
+          className="flex-1 border p-2 rounded text-sm"
+        />
+        <button
+          className="text-xs text-red-500"
+          onClick={() => {
+            const updated = [...tools];
+            updated.splice(idx, 1);
+            setTools(updated);
+          }}
+        >
+          삭제
+        </button>
+      </div>
+    ))}
+    <button
+      className="text-xs text-blue-600 mt-1"
+      onClick={() => setTools((prev) => [...prev, ''])}
+    >
+      + 추가
+    </button>
+  </div>
+</section>
+
 {/* 프로젝트 */} 
 <section className="bg-white border p-6 rounded mb-8 shadow-sm">
   <h3 className="text-lg font-semibold mb-4">프로젝트 경험</h3>
@@ -409,6 +512,24 @@ const handleAddressSearch = async () => {
     + 프로젝트 추가
   </button>
 </section>
+
+{/* 개인정보 고지 및 동의 */}
+<section className="bg-white border p-4 rounded mb-8 shadow-sm">
+  <p className="text-sm text-gray-700 mb-2">
+    ⚠️ 작성된 모든 정보는 이력서 및 포트폴리오 자동 생성 목적에만 사용되며,
+    저장 시 이에 동의한 것으로 간주됩니다.
+  </p>
+  <label className="inline-flex items-center gap-2 text-sm">
+    <input
+      type="checkbox"
+      checked={agree}
+      onChange={(e) => setAgree(e.target.checked)}
+      className="w-4 h-4"
+    />
+    위의 개인정보 활용에 동의합니다.
+  </label>
+</section>
+
 
         {/* 저장 버튼 */}
         <div className="text-right">
