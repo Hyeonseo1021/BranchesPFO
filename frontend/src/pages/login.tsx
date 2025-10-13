@@ -9,25 +9,25 @@ export default function Login() {
   const [email, setEmail] = useState('');   // username → email
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  try {
-    const response = await axios.post("http://localhost:5000/auth/login", {
-      email,
-      password,
-    });
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
+        email,
+        password,
+      });
 
-    // ✅ 백엔드가 내려주는 토큰을 localStorage에 저장
-    localStorage.setItem("token", response.data.token);
+      // ✅ 백엔드가 내려주는 토큰을 localStorage에 저장
+      localStorage.setItem("token", response.data.token);
 
-    alert("로그인 성공! 메인 페이지로 이동합니다.");
-    navigate("/main");
-  } catch (error: any) {
-    console.error(error);
-    alert(error.response?.data?.message || "로그인 실패");
-  }
-};
+      alert("로그인 성공! 메인 페이지로 이동합니다.");
+      navigate("/main");
+    } catch (error: any) {
+      console.error(error);
+      alert(error.response?.data?.message || "로그인 실패");
+    }
+  };
 
   return (
     <div

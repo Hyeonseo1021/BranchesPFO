@@ -21,7 +21,7 @@ export default function CommunityPage() {
   useEffect(() => {
   const fetchPosts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/community/posts", {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/community/posts`, {
         withCredentials: true,
       });
       console.log("게시글 응답:", res.data);
@@ -39,7 +39,7 @@ export default function CommunityPage() {
 
 const handleWirteClick = async () => {
   try{
-    await axios.get("http://localhost:5000/api/users/verify", { withCredentials: true });
+    await axios.get(`${process.env.REACT_APP_API_URL}/users/verify`, { withCredentials: true });
     navigate('/write');
   } catch (error) {
     console.error("로그인 상태 확인 실패 : ", error);

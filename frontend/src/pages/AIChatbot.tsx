@@ -19,7 +19,7 @@ export default function AIChatbotPage() {
 
     try {
       // 백엔드 API에 요청
-      const response = await axios.post('http://localhost:5000/api/chat/', 
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/chat/`, 
         {prompt: input},
         {withCredentials: true}
       );
