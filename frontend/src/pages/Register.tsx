@@ -20,7 +20,7 @@ export default function Register() {
       return;
     }
  try {
-      const response = await axios.post("/auth/register", {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, {
         id: username,     // 백엔드 요구사항: 아이디
         name: nickname,   // 백엔드 요구사항: 이름(닉네임)
         email: email,     // ✅ 프론트에서 직접 입력한 이메일

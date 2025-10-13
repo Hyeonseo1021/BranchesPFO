@@ -60,7 +60,7 @@ const handleAddressSearch = async () => {
     }
     try {
       // 백엔드 API 호출
-      const response = await fetch(`/auth/address/search?keyword=${encodeURIComponent(address)}`);
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/address/search?keyword=${encodeURIComponent(address)}`);
       const data = await response.json();
 
       // TODO: 검색 결과를 UI에 표시하는 로직을 여기에 추가합니다.

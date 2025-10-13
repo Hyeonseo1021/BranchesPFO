@@ -1,32 +1,29 @@
 import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import cors from "cors"; // cors 추가
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/UserRoutes";
-import resumeRouter from "./routes/resume";
+import resumeRouter from "./routes/ResumeRoutes";
 import communityRoutes from "./routes/CommunityRoutes"; // 경로에 공백이 없는지 확인
-import cors from "cors"; // cors 추가
-import testRouter from "./routes/test";
 import chatRouter from "./routes/ChatRoutes"; // 추가
 
 dotenv.config();
 const app = express();
 
-app.use(express.json());
-app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: process.env.CLIENT_URL,
   credentials: true,
 }));
+app.use(express.json());
+app.use(cookieParser(process.env.COOKIE_SECRET));
 
-// --- API 라우터 연결 ---
-app.use("/auth", authRoutes);
+
+// connect api
+app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRouter);
 app.use("/api/community", communityRoutes);
-
-// 챗봇 API
-app.use("/api", chatRouter); // 추가
-app.use("/test", testRouter);
+app.use("/api/chat", chatRouter); 
 
 const connectDB = async () => {
   try {

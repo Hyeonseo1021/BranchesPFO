@@ -15,7 +15,7 @@ export default function WritePage() {
 
     try {
       const response = await axios.post(
-      "http://localhost:5000/api/community/posts",  // 👈 여기
+      `${process.env.REACT_APP_API_URL}/community/posts`,  // 👈 여기
       { title, content },
       { withCredentials: true }
   );

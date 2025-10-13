@@ -1,9 +1,11 @@
 // src/routes/ChatRoutes.ts
 import { Router } from "express";
-import { generateChatResponse } from "../controllers/ChatController";
+import { generateChatResponse, generateSimpleText } from "../controllers/ChatController";
+import verifyToken from '../middleware/verifyToken';
 
 const router = Router();
 
-router.post("/chat", generateChatResponse);
+router.post("/", verifyToken, generateChatResponse);
+router.post("/generate-text", verifyToken, generateSimpleText);
 
 export default router;

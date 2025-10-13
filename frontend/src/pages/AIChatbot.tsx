@@ -10,7 +10,7 @@ export default function AIChatbotPage() {
   const [input, setInput] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = async () => { // async로 변경
+  const handleSend = async () => { 
     if (!input.trim()) return;
 
     const userMessage = { sender: 'user', text: input };
@@ -19,9 +19,10 @@ export default function AIChatbotPage() {
 
     try {
       // 백엔드 API에 요청
-      const response = await axios.post('http://localhost:5000/api/chat', { 
-        prompt: input
-      });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/chat/`, 
+        {prompt: input},
+        {withCredentials: true}
+      );
       const botMessage = { sender: 'bot', text: response.data.response };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
