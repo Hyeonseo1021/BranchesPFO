@@ -1,31 +1,36 @@
+// src/pages/Login.tsx
+
 import React, { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Header from '../pages/Header';
 import Footer from '../pages/Footer';
-import { Link } from 'react-router-dom';
-import axios from "axios";
+import axiosInstance from '../api/axios';
 
 export default function Login() {
-  const [email, setEmail] = useState('');   // username → email
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
+      const response = await axiosInstance.post('/auth/login', {
         email,
         password,
       });
 
-      // ✅ 백엔드가 내려주는 토큰을 localStorage에 저장
-      localStorage.setItem("token", response.data.token);
+      // ✅ 쿠키 기반 - localStorage 저장 불필요
+      // 백엔드가 Set-Cookie로 토큰 전송, withCredentials로 자동 저장됨
+      console.log('✅ 로그인 성공:', response.data);
 
-      alert("로그인 성공! 메인 페이지로 이동합니다.");
-      navigate("/main");
+      if (response.status === 200) {
+        alert(`${response.data.message} 메인 페이지로 이동합니다.`);
+        navigate('/main');
+      }
     } catch (error: any) {
-      console.error(error);
-      alert(error.response?.data?.message || "로그인 실패");
+      console.error('❌ 로그인 실패:', error);
+      alert(error.response?.data?.message || '로그인 실패');
     }
   };
 
@@ -41,8 +46,6 @@ export default function Login() {
 
       <div className="flex flex-col items-center justify-center flex-grow">
         <div className="bg-white/80 backdrop-blur-md p-12 rounded-lg shadow-lg w-full max-w-2xl min-h-[600px] flex flex-col justify-center">
-
-          {/* 상단 로고 + 타이틀 */}
           <div className="flex flex-col items-center justify-center space-y-6 mb-8">
             <div className="flex items-center gap-2">
               <img
@@ -54,9 +57,7 @@ export default function Login() {
             </div>
           </div>
 
-          {/* 로그인 입력 폼 */}
           <form onSubmit={handleLogin}>
-            {/* 이메일 입력 */}
             <div className="mb-4">
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 이메일
@@ -65,12 +66,11 @@ export default function Login() {
                 type="email"
                 placeholder="이메일"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}  // email로 변경
+                onChange={(e) => setEmail(e.target.value)}
                 className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
               />
             </div>
 
-            {/* 비밀번호 입력 */}
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 비밀번호
@@ -84,7 +84,6 @@ export default function Login() {
               />
             </div>
 
-            {/* 로그인 버튼 */}
             <div className="flex items-center justify-center">
               <button
                 type="submit"
@@ -94,9 +93,8 @@ export default function Login() {
               </button>
             </div>
 
-            {/* 하단 링크 */}
             <div className="flex justify-between mt-4 text-sm text-gray-600">
-              <a href="#" className="hover:underline">아이디/비번찾기</a>
+              <a href="#" className="hover:underline">아이디/비밀번호 찾기</a>
               <Link to="/register" className="hover:underline">회원가입</Link>
             </div>
           </form>

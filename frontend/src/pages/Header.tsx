@@ -1,14 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../api/axios';
 
 export default function Header() {
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem('token');
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    alert('로그아웃 되었습니다.');
-    navigate('/login');
+  // ✅ localStorage 체크 제거 - 쿠키 기반 인증 사용
+  const handleLogout = async () => {
+    try {
+      // ✅ 백엔드 로그아웃 API 호출 (쿠키 삭제)
+      await axiosInstance.post('/auth/logout');
+      alert('로그아웃 되었습니다.');
+      navigate('/login');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      // 실패해도 로그인 페이지로 이동
+      navigate('/login');
+    }
   };
 
   return (
@@ -22,31 +30,12 @@ export default function Header() {
         <a onClick={() => navigate('/community')} className="hover:underline cursor-pointer">커뮤니티</a>
         <a onClick={() => navigate('/aichatbot')} className="hover:underline cursor-pointer">AI도우미</a>
         <a onClick={() => navigate('/aipfopage')} className="hover:underline cursor-pointer">이력서/포트폴리오 생성</a>
-          <a
-          onClick={() => navigate('/jobrecommend')}
-          className="hover:underline cursor-pointer"
-        >
-          취업 정보 추천
-        </a>
-        <a
-          onClick={() => {
-            if (!isLoggedIn) {
-              alert('로그인이 필요합니다.');
-              navigate('/login');
-            } else {
-              navigate('/mypage');
-            }
-          }}
-          className="hover:underline cursor-pointer"
-        >
-          Mypage
-        </a>
-
-        {isLoggedIn ? (
-          <a onClick={handleLogout} className="hover:underline cursor-pointer text-red-600">로그아웃</a>
-        ) : (
-          <a onClick={() => navigate('/login')} className="hover:underline cursor-pointer">로그인</a>
-        )}
+        <a onClick={() => navigate('/jobrecommend')} className="hover:underline cursor-pointer">취업 정보 추천</a>
+        
+        {/* ✅ 로그인 체크 없이 바로 이동 - MyPage에서 인증 확인 */}
+        <a onClick={() => navigate('/mypage')} className="hover:underline cursor-pointer">Mypage</a>
+        
+        <a onClick={handleLogout} className="hover:underline cursor-pointer text-red-600">로그아웃</a>
       </nav>
     </header>
   );

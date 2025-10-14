@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
+import axiosInstance from '../api/axios'; 
 import axios from 'axios'; // axios 추가
 
 export default function AIChatbotPage() {
@@ -8,6 +9,7 @@ export default function AIChatbotPage() {
     { sender: 'bot', text: '안녕하세요! 무엇을 도와드릴까요?' }
   ]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const handleSend = async () => { 
@@ -16,13 +18,13 @@ export default function AIChatbotPage() {
     const userMessage = { sender: 'user', text: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setIsLoading(true)
 
     try {
       // 백엔드 API에 요청
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/chat/`, 
-        {prompt: input},
-        {withCredentials: true}
-      );
+      const response = await axiosInstance.post('/chat/', {
+        prompt: input
+      });
       const botMessage = { sender: 'bot', text: response.data.response };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {

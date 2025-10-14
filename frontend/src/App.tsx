@@ -4,7 +4,7 @@ import Login from './pages/login'; // login.tsx 파일
 import AIPFOPage from './pages/AIPFOPage'; // home.tsx 파일의 export default 이름에 맞춤
 import Portfolio from './pages/PortfolioWrite_Page';// PortfolioWrite_Page.tsx → 이름 바꾸자
 import Register from './pages/Register'; 
-import MainPage from './pages/Main';
+import MainPage from './pages/main';
 import CommunityPage from './pages/community';
 import WritePage from './pages/write';
 import CmDetail from './pages/cmdetail';

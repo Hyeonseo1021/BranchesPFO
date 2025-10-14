@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import { useRouter } from 'next/router';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../api/axios';  // ✅ 추가
 
 export default function PortfolioPage() {
   const [name, setName] = useState('');
@@ -17,90 +18,120 @@ export default function PortfolioPage() {
   const [tools, setTools] = useState<string[]>([]);
   const [projects, setProjects] = useState<string[]>([]);
   const [photo, setPhoto] = useState('');
-const [agree, setAgree] = useState(false);
-  useEffect(() => {
-    setName(localStorage.getItem('mypage_name') || '');
-    setBirth(localStorage.getItem('mypage_birth') || '');
-    setAddress(localStorage.getItem('mypage_address') || '');
-    setPhone(localStorage.getItem('mypage_phone') || '');
-    setIntro(localStorage.getItem('mypage_intro') || '');
-    setEducation(JSON.parse(localStorage.getItem('mypage_education') || '[]'));
-    setCareer(JSON.parse(localStorage.getItem('mypage_careers') || '[]'));
-    setCertificates(JSON.parse(localStorage.getItem('mypage_certificates') || '[]'));
-    setSkills(JSON.parse(localStorage.getItem('mypage_skills') || '[]'));
-    setTools(JSON.parse(localStorage.getItem('mypage_tools') || '[]'));
-    setProjects(JSON.parse(localStorage.getItem('mypage_projects') || '[]'));
-    setPhoto(localStorage.getItem('mypage_photo') || '');
-  }, []);
+  const [agree, setAgree] = useState(false);
+  const [userId, setUserId] = useState<string>('');  // ✅ userId state 추가
+  const navigate = useNavigate();
 
-  const handleSave = () => {
-      if (!agree) {
-    alert('개인정보 수집 및 이용에 동의해주세요.');
-    return;
-  }
-    localStorage.setItem('mypage_name', name);
-    localStorage.setItem('mypage_birth', birth);
-    localStorage.setItem('mypage_address', address);
-    localStorage.setItem('mypage_phone', phone);
-    localStorage.setItem('mypage_intro', intro);
-    localStorage.setItem('mypage_education', JSON.stringify(education));
-    localStorage.setItem('mypage_careers', JSON.stringify(career));
-    localStorage.setItem('mypage_certificates', JSON.stringify(certificates));
-    localStorage.setItem('mypage_skills', JSON.stringify(skills));
-    localStorage.setItem('mypage_tools', JSON.stringify(tools));
-    localStorage.setItem('mypage_projects', JSON.stringify(projects));
-    localStorage.setItem('mypage_photo', photo);
-    alert('저장되었습니다.');
-    window.location.href = '/mypage';
+  /** ✅ 프로필 불러오기 (쿠키 기반 인증) */
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        // ✅ 먼저 현재 사용자 정보 가져오기
+        const meRes = await axiosInstance.get('/auth/me');
+        const currentUserId = meRes.data.user._id;
+        setUserId(currentUserId);
+
+        // ✅ 프로필 정보 가져오기
+        const profileRes = await axiosInstance.get(`/profile/${currentUserId}`);
+        const data = profileRes.data;
+
+        if (data) {
+          setName(data.name || "");
+          setBirth(data.birth || "");
+          setPhone(data.phone || "");
+          setAddress(data.address || "");
+          setIntro(data.introduction || "");
+          setEducation(
+            (data.education || []).map(
+              (e: any) => `${e.schoolType || ''} / ${e.school || ""} / ${e.major || ""} / ${e.degree || ""} / ${e.period || ""}`
+            )
+          );
+          setCareer((data.experiences || []).map((e: any) => `${e.company} / ${e.position} / ${e.period}`));
+          setCertificates((data.certificates || []).map((c: any) => c.name));
+          setSkills(data.skills || []);
+          setTools(data.tools || []);
+          setProjects((data.projects || []).map((p: any) => `${p.title}::${p.description}`));
+          setPhoto(data.avatar || "");
+        }
+      } catch (err: any) {
+        console.error("프로필 불러오기 실패:", err);
+        if (err.response?.status === 401) {
+          alert('로그인이 필요합니다.');
+          navigate('/login');
+        }
+      }
+    };
+    fetchProfile();
+  }, [navigate]);
+
+  /** ✅ 저장 버튼 - axiosInstance 사용 */
+  const handleSave = async () => {
+    if (!agree) {
+      alert("개인정보 수집 및 이용에 동의해주세요.");
+      return;
+    }
+
+    if (!userId) {
+      alert("사용자 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    const body = {
+      name,
+      birth,
+      phone,
+      address,
+      introduction: intro,
+      avatar: photo,
+      education: education.map((item) => {
+        const [schoolType, school, major, degree, period] = item.split(" / ");
+        return { schoolType, school, major, degree, period };
+      }),
+      experiences: career.map((item) => {
+        const [company, position, period] = item.split(" / ");
+        return { company, position, period, description: "" };
+      }),
+      certificates: certificates.map((c) => ({ name: c })),
+      skills,
+      tools,
+      projects: projects.map((item) => {
+        const [title, desc] = item.split("::");
+        return { title, description: desc };
+      }),
+    };
+
+    try {
+      // ✅ axiosInstance 사용 (쿠키 자동 전송)
+      await axiosInstance.patch(`/profile/${userId}/basic`, body);
+
+      alert("서버에 저장되었습니다.");
+      navigate("/mypage");
+    } catch (err: any) {
+      console.error(err);
+      if (err.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+      } else {
+        alert("저장 중 오류가 발생했습니다.");
+      }
+    }
   };
-const handleAddressSearch = async () => {
+
+  /** 주소 검색 - axiosInstance 사용 */
+  const handleAddressSearch = async () => {
     if (!address) {
       alert('주소를 입력해주세요.');
       return;
     }
     try {
-      // 백엔드 API 호출
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/address/search?keyword=${encodeURIComponent(address)}`);
-      const data = await response.json();
-
-      // TODO: 검색 결과를 UI에 표시하는 로직을 여기에 추가합니다.
-      // 예를 들어, 검색된 주소 목록을 모달창으로 보여주고 선택하게 할 수 있습니다.
-      console.log(data);
-      alert('주소 검색 API가 호출되었습니다. (개발자 콘솔을 확인해보세요)');
+      const response = await axiosInstance.get(`/auth/address/search?keyword=${encodeURIComponent(address)}`);
+      console.log(response.data);
+      alert('주소 검색 API가 호출되었습니다. (개발자 콘솔 확인)');
     } catch (error) {
       console.error("주소 검색 오류:", error);
       alert('주소 검색 중 오류가 발생했습니다.');
     }
   };
-  const renderEditableList = (
-    label: string,
-    items: string[],
-    setItems: React.Dispatch<React.SetStateAction<string[]>>,
-    placeholder: string
-  ) => (
-    <div className="mb-6">
-      <h3 className="font-semibold mb-2">{label}</h3>
-      {items.map((item, idx) => (
-        <input
-          key={idx}
-          value={item}
-          placeholder={placeholder}
-          onChange={(e) => {
-            const updated = [...items];
-            updated[idx] = e.target.value;
-            setItems(updated);
-          }}
-          className="w-full border p-2 rounded mb-2 text-sm"
-        />
-      ))}
-      <button
-        className="text-xs text-blue-600 mt-1"
-        onClick={() => setItems((prev) => [...prev, ''])}
-      >
-        + 추가
-      </button>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -112,67 +143,66 @@ const handleAddressSearch = async () => {
 
         {/* 인적사항 */}
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
-  <h3 className="text-lg font-semibold mb-4">인적사항</h3>
-  <div className="flex gap-6">
-    {/* 사진 업로드 */}
-    <div>
-      <img
-        src={photo || '/user-avatar.png'}
-        alt="프로필"
-        className="w-32 h-40 border object-cover mb-2"
-      />
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setPhoto(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-          }
-        }}
-        className="text-xs"
-      />
-    </div>
+          <h3 className="text-lg font-semibold mb-4">인적사항</h3>
+          <div className="flex gap-6">
+            {/* 사진 업로드 */}
+            <div>
+              <img
+                src={photo || '/user-avatar.png'}
+                alt="프로필"
+                className="w-32 h-40 border object-cover mb-2"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setPhoto(reader.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                className="text-xs"
+              />
+            </div>
 
-    {/* 텍스트 입력란 */}
-    <div className="grid grid-cols-2 gap-4 flex-1">
-      <div>
-        <label className="block text-xs mb-1">이름</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} className="w-full border p-2 rounded text-sm" />
-      </div>
-      <div>
-        <label className="block text-xs mb-1">생년월일</label>
-        <input
-          type="date"
-          value={birth}
-          onChange={(e) => setBirth(e.target.value)}
-          className="w-full border p-2 rounded text-sm"
-        />
-      </div>
-      <div>
-        <label className="block text-xs mb-1">연락처</label>
-        <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border p-2 rounded text-sm" />
-      </div>
-      <div>
-        <label className="block text-xs mb-1">주소</label>
-        <div className="flex gap-2">
-          <input value={address} onChange={(e) => setAddress(e.target.value)} className="flex-1 border p-2 rounded text-sm" />
-          <button
-            onClick={handleAddressSearch}
-            className="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
-          >
-            주소 찾기
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
+            {/* 텍스트 입력란 */}
+            <div className="grid grid-cols-2 gap-4 flex-1">
+              <div>
+                <label className="block text-xs mb-1">이름</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} className="w-full border p-2 rounded text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs mb-1">생년월일</label>
+                <input
+                  type="date"
+                  value={birth}
+                  onChange={(e) => setBirth(e.target.value)}
+                  className="w-full border p-2 rounded text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs mb-1">연락처</label>
+                <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border p-2 rounded text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs mb-1">주소</label>
+                <div className="flex gap-2">
+                  <input value={address} onChange={(e) => setAddress(e.target.value)} className="flex-1 border p-2 rounded text-sm" />
+                  <button
+                    onClick={handleAddressSearch}
+                    className="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                  >
+                    주소 찾기
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* 자기소개 */}
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
@@ -187,178 +217,175 @@ const handleAddressSearch = async () => {
 
         {/* 학력 */}
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
-  <h3 className="text-lg font-semibold mb-4">학력</h3>
+          <h3 className="text-lg font-semibold mb-4">학력</h3>
 
-  {education.map((item, idx) => {
-    const [schoolType = '', schoolName = '', major = '', degree = '', period = ''] = item.split(' / ');
+          {education.map((item, idx) => {
+            const [schoolType = '', schoolName = '', major = '', degree = '', period = ''] = item.split(' / ');
 
-    const updateItem = (index: number, fieldIndex: number, value: string) => {
-      const fields = (education[index] || '').split(' / ');
-      fields[fieldIndex] = value;
-      const newValue = fields.map(f => f || '').join(' / ');
-      const updated = [...education];
-      updated[index] = newValue;
-      setEducation(updated);
-    };
-
-    return (
-      <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
-        <div className="grid grid-cols-2 gap-2">
-          <select
-            value={schoolType}
-            onChange={(e) => updateItem(idx, 0, e.target.value)}
-            className="border p-2 rounded text-sm"
-          >
-            <option value="">학교 구분</option>
-            <option value="고등학교">고등학교</option>
-            <option value="대학교">대학교</option>
-            <option value="대학원">대학원</option>
-          </select>
-
-          <div className="flex gap-2">
-            <input
-              value={schoolName}
-              onChange={(e) => updateItem(idx, 1, e.target.value)}
-              className="flex-1 border p-2 rounded text-sm"
-              placeholder="학교명"
-            />
-            <button
-              onClick={() => alert('학교 검색은 추후 연동 예정')}
-              className="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
-            >
-              학교 찾기
-            </button>
-          </div>
-        </div>
-
-        <input
-          value={major}
-          onChange={(e) => updateItem(idx, 2, e.target.value)}
-          className="w-full border p-2 rounded text-sm"
-          placeholder="전공 (예: 컴퓨터공학과)"
-        />
-
-        <input
-          value={degree}
-          onChange={(e) => updateItem(idx, 3, e.target.value)}
-          className="w-full border p-2 rounded text-sm"
-          placeholder="학위 (예: 학사, 석사, 박사)"
-        />
-
-        <div className="space-y-2">
-  <div className="grid grid-cols-2 gap-2 items-center">
-    <div>
-      <label className="block text-xs text-gray-600 mb-1">입학일</label>
-      <input
-        type="date"
-        value={period.split('~')[0]?.trim() || ''}
-        onChange={(e) => {
-          const end = period.split('~')[1]?.trim() || '';
-          updateItem(idx, 4, `${e.target.value} ~ ${end}`);
-        }}
-        className="w-full border p-2 rounded text-sm"
-      />
-    </div>
-
-    <div>
-      <label className="block text-xs text-gray-600 mb-1">졸업일</label>
-      <input
-        type="date"
-        disabled={period.includes('재학중')}
-        value={
-          period.includes('재학중')
-            ? ''
-            : period.split('~')[1]?.trim() || ''
-        }
-        onChange={(e) => {
-          const start = period.split('~')[0]?.trim() || '';
-          updateItem(idx, 4, `${start} ~ ${e.target.value}`);
-        }}
-        className="w-full border p-2 rounded text-sm"
-      />
-    </div>
-  </div>
-
-  <label className="inline-flex items-center gap-2 text-sm">
-    <input
-      type="checkbox"
-      checked={period.includes('재학중')}
-      onChange={(e) => {
-        const start = period.split('~')[0]?.trim() || '';
-        const end = e.target.checked ? '재학중' : '';
-        updateItem(idx, 4, `${start} ~ ${end}`);
-      }}
-    />
-    재학중
-  </label>
-</div>
-
-
-        <div className="text-right">
-          <button
-            className="text-xs text-red-500"
-            onClick={() => {
+            const updateItem = (index: number, fieldIndex: number, value: string) => {
+              const fields = (education[index] || '').split(' / ');
+              fields[fieldIndex] = value;
+              const newValue = fields.map(f => f || '').join(' / ');
               const updated = [...education];
-              updated.splice(idx, 1);
+              updated[index] = newValue;
               setEducation(updated);
-            }}
+            };
+
+            return (
+              <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <select
+                    value={schoolType}
+                    onChange={(e) => updateItem(idx, 0, e.target.value)}
+                    className="border p-2 rounded text-sm"
+                  >
+                    <option value="">학교 구분</option>
+                    <option value="고등학교">고등학교</option>
+                    <option value="대학교">대학교</option>
+                    <option value="대학원">대학원</option>
+                  </select>
+
+                  <div className="flex gap-2">
+                    <input
+                      value={schoolName}
+                      onChange={(e) => updateItem(idx, 1, e.target.value)}
+                      className="flex-1 border p-2 rounded text-sm"
+                      placeholder="학교명"
+                    />
+                    <button
+                      onClick={() => alert('학교 검색은 추후 연동 예정')}
+                      className="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                    >
+                      학교 찾기
+                    </button>
+                  </div>
+                </div>
+
+                <input
+                  value={major}
+                  onChange={(e) => updateItem(idx, 2, e.target.value)}
+                  className="w-full border p-2 rounded text-sm"
+                  placeholder="전공 (예: 컴퓨터공학과)"
+                />
+
+                <input
+                  value={degree}
+                  onChange={(e) => updateItem(idx, 3, e.target.value)}
+                  className="w-full border p-2 rounded text-sm"
+                  placeholder="학위 (예: 학사, 석사, 박사)"
+                />
+
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2 items-center">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">입학일</label>
+                      <input
+                        type="date"
+                        value={period.split('~')[0]?.trim() || ''}
+                        onChange={(e) => {
+                          const end = period.split('~')[1]?.trim() || '';
+                          updateItem(idx, 4, `${e.target.value} ~ ${end}`);
+                        }}
+                        className="w-full border p-2 rounded text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">졸업일</label>
+                      <input
+                        type="date"
+                        disabled={period.includes('재학중')}
+                        value={
+                          period.includes('재학중')
+                            ? ''
+                            : period.split('~')[1]?.trim() || ''
+                        }
+                        onChange={(e) => {
+                          const start = period.split('~')[0]?.trim() || '';
+                          updateItem(idx, 4, `${start} ~ ${e.target.value}`);
+                        }}
+                        className="w-full border p-2 rounded text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <label className="inline-flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={period.includes('재학중')}
+                      onChange={(e) => {
+                        const start = period.split('~')[0]?.trim() || '';
+                        const end = e.target.checked ? '재학중' : '';
+                        updateItem(idx, 4, `${start} ~ ${end}`);
+                      }}
+                    />
+                    재학중
+                  </label>
+                </div>
+
+                <div className="text-right">
+                  <button
+                    className="text-xs text-red-500"
+                    onClick={() => {
+                      const updated = [...education];
+                      updated.splice(idx, 1);
+                      setEducation(updated);
+                    }}
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+
+          <button
+            className="text-xs text-blue-600 mt-2"
+            onClick={() => setEducation(prev => [...prev, ' / / / / '])}
           >
-            삭제
+            + 학력 추가
           </button>
-        </div>
-      </div>
-    );
-  })}
+        </section>
 
-  <button
-    className="text-xs text-blue-600 mt-2"
-    onClick={() => setEducation(prev => [...prev, ' / / / / '])}
-  >
-    + 학력 추가
-  </button>
-</section>
+        {/* 경력 */}
+        <section className="bg-white border p-6 rounded mb-8 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4">경력</h3>
 
+          {career.map((item, idx) => (
+            <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
+              <input
+                value={item}
+                onChange={(e) => {
+                  const updated = [...career];
+                  updated[idx] = e.target.value;
+                  setCareer(updated);
+                }}
+                placeholder="예: 삼성전자 / 백엔드 개발 / 2022~2023"
+                className="w-full border p-2 rounded text-sm"
+              />
 
-{/* 경력 */}
-<section className="bg-white border p-6 rounded mb-8 shadow-sm">
-  <h3 className="text-lg font-semibold mb-4">경력</h3>
+              <div className="text-right">
+                <button
+                  className="text-xs text-red-500"
+                  onClick={() => {
+                    const updated = [...career];
+                    updated.splice(idx, 1);
+                    setCareer(updated);
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+          ))}
 
-  {career.map((item, idx) => (
-    <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
-      <input
-        value={item}
-        onChange={(e) => {
-          const updated = [...career];
-          updated[idx] = e.target.value;
-          setCareer(updated);
-        }}
-        placeholder="예: 삼성전자 / 백엔드 개발 / 2022~2023"
-        className="w-full border p-2 rounded text-sm"
-      />
-
-      <div className="text-right">
-        <button
-          className="text-xs text-red-500"
-          onClick={() => {
-            const updated = [...career];
-            updated.splice(idx, 1);
-            setCareer(updated);
-          }}
-        >
-          삭제
-        </button>
-      </div>
-    </div>
-  ))}
-
-  <button
-    className="text-xs text-blue-600 mt-2"
-    onClick={() => setCareer((prev) => [...prev, ''])}
-  >
-    + 경력 추가
-  </button>
-</section>
-
+          <button
+            className="text-xs text-blue-600 mt-2"
+            onClick={() => setCareer((prev) => [...prev, ''])}
+          >
+            + 경력 추가
+          </button>
+        </section>
 
         {/* 자격증 */}
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
@@ -388,148 +415,147 @@ const handleAddressSearch = async () => {
           </button>
         </section>
 
-{/* 기술, 툴 */}
-<section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-  {/* 기술 역량 */}
-  <div className="bg-white border p-6 rounded shadow-sm">
-    <h3 className="font-semibold mb-2">기술 역량</h3>
-    {skills.map((skill, idx) => (
-      <div key={idx} className="flex items-center gap-2 mb-2">
-        <input
-          value={skill}
-          onChange={(e) => {
-            const updated = [...skills];
-            updated[idx] = e.target.value;
-            setSkills(updated);
-          }}
-          placeholder="예: JavaScript, React, Node.js"
-          className="flex-1 border p-2 rounded text-sm"
-        />
-        <button
-          className="text-xs text-red-500"
-          onClick={() => {
-            const updated = [...skills];
-            updated.splice(idx, 1);
-            setSkills(updated);
-          }}
-        >
-          삭제
-        </button>
-      </div>
-    ))}
-    <button
-      className="text-xs text-blue-600 mt-1"
-      onClick={() => setSkills((prev) => [...prev, ''])}
-    >
-      + 추가
-    </button>
-  </div>
+        {/* 기술, 툴 */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* 기술 역량 */}
+          <div className="bg-white border p-6 rounded shadow-sm">
+            <h3 className="font-semibold mb-2">기술 역량</h3>
+            {skills.map((skill, idx) => (
+              <div key={idx} className="flex items-center gap-2 mb-2">
+                <input
+                  value={skill}
+                  onChange={(e) => {
+                    const updated = [...skills];
+                    updated[idx] = e.target.value;
+                    setSkills(updated);
+                  }}
+                  placeholder="예: JavaScript, React, Node.js"
+                  className="flex-1 border p-2 rounded text-sm"
+                />
+                <button
+                  className="text-xs text-red-500"
+                  onClick={() => {
+                    const updated = [...skills];
+                    updated.splice(idx, 1);
+                    setSkills(updated);
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+            ))}
+            <button
+              className="text-xs text-blue-600 mt-1"
+              onClick={() => setSkills((prev) => [...prev, ''])}
+            >
+              + 추가
+            </button>
+          </div>
 
-  {/* 툴/도구 */}
-  <div className="bg-white border p-6 rounded shadow-sm">
-    <h3 className="font-semibold mb-2">툴 / 도구</h3>
-    {tools.map((tool, idx) => (
-      <div key={idx} className="flex items-center gap-2 mb-2">
-        <input
-          value={tool}
-          onChange={(e) => {
-            const updated = [...tools];
-            updated[idx] = e.target.value;
-            setTools(updated);
-          }}
-          placeholder="예: GitHub, Figma"
-          className="flex-1 border p-2 rounded text-sm"
-        />
-        <button
-          className="text-xs text-red-500"
-          onClick={() => {
-            const updated = [...tools];
-            updated.splice(idx, 1);
-            setTools(updated);
-          }}
-        >
-          삭제
-        </button>
-      </div>
-    ))}
-    <button
-      className="text-xs text-blue-600 mt-1"
-      onClick={() => setTools((prev) => [...prev, ''])}
-    >
-      + 추가
-    </button>
-  </div>
-</section>
+          {/* 툴/도구 */}
+          <div className="bg-white border p-6 rounded shadow-sm">
+            <h3 className="font-semibold mb-2">툴 / 도구</h3>
+            {tools.map((tool, idx) => (
+              <div key={idx} className="flex items-center gap-2 mb-2">
+                <input
+                  value={tool}
+                  onChange={(e) => {
+                    const updated = [...tools];
+                    updated[idx] = e.target.value;
+                    setTools(updated);
+                  }}
+                  placeholder="예: GitHub, Figma"
+                  className="flex-1 border p-2 rounded text-sm"
+                />
+                <button
+                  className="text-xs text-red-500"
+                  onClick={() => {
+                    const updated = [...tools];
+                    updated.splice(idx, 1);
+                    setTools(updated);
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+            ))}
+            <button
+              className="text-xs text-blue-600 mt-1"
+              onClick={() => setTools((prev) => [...prev, ''])}
+            >
+              + 추가
+            </button>
+          </div>
+        </section>
 
-{/* 프로젝트 */} 
-<section className="bg-white border p-6 rounded mb-8 shadow-sm">
-  <h3 className="text-lg font-semibold mb-4">프로젝트 경험</h3>
+        {/* 프로젝트 */}
+        <section className="bg-white border p-6 rounded mb-8 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4">프로젝트 경험</h3>
 
-  {projects.map((item, idx) => {
-    const [title = '', detail = ''] = item.split('::');
+          {projects.map((item, idx) => {
+            const [title = '', detail = ''] = item.split('::');
 
-    const updateProject = (newTitle: string, newDetail: string) => {
-      const updated = [...projects];
-      updated[idx] = `${newTitle}::${newDetail}`;
-      setProjects(updated);
-    };
-
-    return (
-      <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
-        <input
-          value={title}
-          onChange={(e) => updateProject(e.target.value, detail)}
-          placeholder="예: PFO 플랫폼 개발 / 프론트엔드 / Next.js"
-          className="w-full border p-2 rounded text-sm"
-        />
-        <textarea
-          value={detail}
-          onChange={(e) => updateProject(title, e.target.value)}
-          placeholder="상세 설명을 입력하세요. (예: 4인 팀으로 프론트엔드 담당. React와 Tailwind로 개발. 6주간 진행 등)"
-          className="w-full border p-2 rounded text-sm"
-          rows={3}
-        />
-        <div className="text-right">
-          <button
-            onClick={() => {
+            const updateProject = (newTitle: string, newDetail: string) => {
               const updated = [...projects];
-              updated.splice(idx, 1);
+              updated[idx] = `${newTitle}::${newDetail}`;
               setProjects(updated);
-            }}
-            className="text-xs text-red-500"
+            };
+
+            return (
+              <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
+                <input
+                  value={title}
+                  onChange={(e) => updateProject(e.target.value, detail)}
+                  placeholder="예: PFO 플랫폼 개발 / 프론트엔드 / Next.js"
+                  className="w-full border p-2 rounded text-sm"
+                />
+                <textarea
+                  value={detail}
+                  onChange={(e) => updateProject(title, e.target.value)}
+                  placeholder="상세 설명을 입력하세요. (예: 4인 팀으로 프론트엔드 담당. React와 Tailwind로 개발. 6주간 진행 등)"
+                  className="w-full border p-2 rounded text-sm"
+                  rows={3}
+                />
+                <div className="text-right">
+                  <button
+                    onClick={() => {
+                      const updated = [...projects];
+                      updated.splice(idx, 1);
+                      setProjects(updated);
+                    }}
+                    className="text-xs text-red-500"
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+
+          <button
+            onClick={() => setProjects([...projects, '::'])}
+            className="text-xs text-blue-600"
           >
-            삭제
+            + 프로젝트 추가
           </button>
-        </div>
-      </div>
-    );
-  })}
+        </section>
 
-  <button
-    onClick={() => setProjects([...projects, '::'])}
-    className="text-xs text-blue-600"
-  >
-    + 프로젝트 추가
-  </button>
-</section>
-
-{/* 개인정보 고지 및 동의 */}
-<section className="bg-white border p-4 rounded mb-8 shadow-sm">
-  <p className="text-sm text-gray-700 mb-2">
-    ⚠️ 작성된 모든 정보는 이력서 및 포트폴리오 자동 생성 목적에만 사용되며,
-    저장 시 이에 동의한 것으로 간주됩니다.
-  </p>
-  <label className="inline-flex items-center gap-2 text-sm">
-    <input
-      type="checkbox"
-      checked={agree}
-      onChange={(e) => setAgree(e.target.checked)}
-      className="w-4 h-4"
-    />
-    위의 개인정보 활용에 동의합니다.
-  </label>
-</section>
-
+        {/* 개인정보 고지 및 동의 */}
+        <section className="bg-white border p-4 rounded mb-8 shadow-sm">
+          <p className="text-sm text-gray-700 mb-2">
+            ⚠️ 작성된 모든 정보는 이력서 및 포트폴리오 자동 생성 목적에만 사용되며,
+            저장 시 이에 동의한 것으로 간주됩니다.
+          </p>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={agree}
+              onChange={(e) => setAgree(e.target.checked)}
+              className="w-4 h-4"
+            />
+            위의 개인정보 활용에 동의합니다.
+          </label>
+        </section>
 
         {/* 저장 버튼 */}
         <div className="text-right">

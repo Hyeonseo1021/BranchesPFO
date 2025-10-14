@@ -42,7 +42,8 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
 /** 새 게시글 생성 */
 export const createPost = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    if (!req.user?.id) {
+    // ✅ req.userId로 변경
+    if (!req.userId) {
       res.status(401).json({ message: '로그인 후 이용하세요.' });
       return;
     }
@@ -56,7 +57,7 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
     const newPost = new Post({
       title,
       content,
-      author: req.user.id,
+      author: req.userId,  // ✅ req.userId로 변경
     });
 
     await newPost.save();
@@ -71,7 +72,7 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
 export const updatePost = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const updatedPost = await Post.findOneAndUpdate(
-      { _id: req.params.postId, author: req.user?.id },
+      { _id: req.params.postId, author: req.userId },  // ✅ req.userId로 변경
       { title: req.body.title, content: req.body.content },
       { new: true }
     );
@@ -90,7 +91,11 @@ export const updatePost = async (req: AuthRequest, res: Response): Promise<void>
 /** 게시글 삭제 */
 export const deletePost = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const deletedPost = await Post.findOneAndDelete({ _id: req.params.postId, author: req.user?.id });
+    const deletedPost = await Post.findOneAndDelete({ 
+      _id: req.params.postId, 
+      author: req.userId  // ✅ req.userId로 변경
+    });
+    
     if (!deletedPost) {
       res.status(404).json({ message: '게시글을 찾을 수 없거나 삭제할 권한이 없습니다.' });
       return;
@@ -120,7 +125,8 @@ export const getComments = async (req: Request, res: Response): Promise<void> =>
 /** 댓글 생성 */
 export const createComment = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    if (!req.user?.id) {
+    // ✅ req.userId로 변경
+    if (!req.userId) {
       res.status(401).json({ message: '로그인 후 이용하세요.' });
       return;
     }
@@ -128,7 +134,7 @@ export const createComment = async (req: AuthRequest, res: Response): Promise<vo
     const newComment = new Comment({
       content: req.body.content,
       postId: req.params.postId,
-      author: req.user.id,
+      author: req.userId,  // ✅ req.userId로 변경
     });
 
     await newComment.save();
@@ -143,7 +149,7 @@ export const createComment = async (req: AuthRequest, res: Response): Promise<vo
 export const updateComment = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const updatedComment = await Comment.findOneAndUpdate(
-      { _id: req.params.commentId, author: req.user?.id },
+      { _id: req.params.commentId, author: req.userId },  // ✅ req.userId로 변경
       { content: req.body.content },
       { new: true }
     );
@@ -162,7 +168,11 @@ export const updateComment = async (req: AuthRequest, res: Response): Promise<vo
 /** 댓글 삭제 */
 export const deleteComment = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const deletedComment = await Comment.findOneAndDelete({ _id: req.params.commentId, author: req.user?.id });
+    const deletedComment = await Comment.findOneAndDelete({ 
+      _id: req.params.commentId, 
+      author: req.userId  // ✅ req.userId로 변경
+    });
+    
     if (!deletedComment) {
       res.status(404).json({ message: '댓글을 찾을 수 없거나 삭제할 권한이 없습니다.' });
       return;
@@ -185,7 +195,8 @@ export const toggleLike = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    const userObjectId = new Types.ObjectId(req.user?.id);
+    // ✅ req.userId로 변경
+    const userObjectId = new Types.ObjectId(req.userId);
     const likeIndex = post.likes.findIndex(id => id.equals(userObjectId));
 
     if (likeIndex > -1) {
@@ -204,7 +215,8 @@ export const toggleLike = async (req: AuthRequest, res: Response): Promise<void>
 /** 북마크 토글 */
 export const toggleBookmark = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = await User.findById(req.user?.id);
+    // ✅ req.userId로 변경
+    const user = await User.findById(req.userId);
     if (!user) {
       res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
       return;

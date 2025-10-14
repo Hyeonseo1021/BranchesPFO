@@ -4,9 +4,10 @@ import mongoose from "mongoose";
 import cors from "cors"; // cors 추가
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/UserRoutes";
-import resumeRouter from "./routes/ResumeRoutes";
+import resumeRoutes from "./routes/ResumeRoutes";
 import communityRoutes from "./routes/CommunityRoutes"; // 경로에 공백이 없는지 확인
-import chatRouter from "./routes/ChatRoutes"; // 추가
+import chatRoutes from "./routes/ChatRoutes"; // 추가
+import profileRoutes from "./routes/ProfileRoutes";
 
 dotenv.config();
 const app = express();
@@ -21,9 +22,10 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 
 // connect api
 app.use("/api/auth", authRoutes);
-app.use("/api/resume", resumeRouter);
+app.use("/api/resume", resumeRoutes);
 app.use("/api/community", communityRoutes);
-app.use("/api/chat", chatRouter); 
+app.use("/api/chat", chatRoutes); 
+app.use("/api/profile", profileRoutes);
 
 const connectDB = async () => {
   try {
