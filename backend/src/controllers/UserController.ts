@@ -96,20 +96,20 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-
 export const userLogout = async (req: Request, res: Response): Promise<void> => {
   try {
-    // ✅ 쿠키 삭제
+    // ✅ 로그인과 동일한 옵션 사용
     res.clearCookie(COOKIE_NAME, {
       path: "/",
       httpOnly: true,
       signed: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",  // ✅ 로그인과 동일
+      secure: process.env.NODE_ENV === "production" || true,  // ✅ 로그인과 동일
     });
 
     res.status(200).json({ message: "로그아웃 성공" });
   } catch (error: any) {
+    console.error("로그아웃 에러:", error);
     res.status(500).json({ message: "서버 오류 발생", cause: error.message });
   }
 };

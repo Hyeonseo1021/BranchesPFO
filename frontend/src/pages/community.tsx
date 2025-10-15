@@ -8,7 +8,7 @@ interface Post {
   _id: string;
   title: string;
   content: string;
-  author: { name: string; id: string };
+  author: { nickname: string; id: string };
   createdAt: string;
 }
 
@@ -98,7 +98,7 @@ export default function CommunityPage() {
                 >
                   <td className="py-2 px-3">{index + 1}</td>
                   <td className="py-2 px-3">{post.title}</td>
-                  <td className="py-2 px-3">{post.author?.name || "익명"}</td>
+                  <td className="py-2 px-3">{post.author?.nickname || "익명"}</td>
                   <td className="py-2 px-3">
                     {new Date(post.createdAt).toLocaleDateString()}
                   </td>

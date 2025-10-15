@@ -8,13 +8,13 @@ interface Post {
   _id: string;
   title: string;
   content: string;
-  author?: { name: string; id: string };
+  author?: { nickname: string; id: string };
   createdAt: string;
 }
 
 interface Comment {
   _id: string;
-  author?: { name: string; id: string };
+  author?: { nickname: string; id: string };
   content: string;
   createdAt: string;
 }
@@ -31,7 +31,7 @@ export default function CmDetail() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await axiosInstance.get(`/posts/${id}`);
+        const res = await axiosInstance.get(`community/posts/${id}`);
         setPost(res.data);
       } catch (err) {
         console.error('게시글 불러오기 실패:', err);
@@ -117,7 +117,7 @@ export default function CmDetail() {
 
         {/* 작성자 + 날짜 */}
         <div className="flex justify-between text-sm text-gray-500 mb-6">
-          <span>글쓴이: {post.author?.name || '익명'}</span>
+          <span>글쓴이: {post.author?.nickname || '익명'}</span>
           <span>작성일자: {new Date(post.createdAt).toLocaleDateString()}</span>
         </div>
 
@@ -135,7 +135,7 @@ export default function CmDetail() {
                 <li key={comment._id} className="border-b pb-2">
                   <p className="text-sm text-gray-700">{comment.content}</p>
                   <p className="text-xs text-gray-400">
-                    작성자: {comment.author?.name || '익명'} |{' '}
+                    작성자: {comment.author?.nickname || '익명'} |{' '}
                     {new Date(comment.createdAt).toLocaleDateString()}
                   </p>
                 </li>

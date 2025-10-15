@@ -79,4 +79,157 @@ export const generateResume = async (req: Request, res: Response): Promise<void>
   }
 };
 
+// ✅ 특정 이력서 조회
+export const getResume = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { resumeId } = req.params;
+    
+    if (!res.locals.jwtData?.id) {
+      res.status(401).json({ message: "인증되지 않은 사용자입니다." });
+      return;
+    }
 
+    const resume = await Resume.findById(resumeId).populate('user', 'name email');
+    
+    if (!resume) {
+      res.status(404).json({ message: "이력서를 찾을 수 없습니다." });
+      return;
+    }
+    
+    // 본인 확인
+    if (resume.user._id.toString() !== res.locals.jwtData?.id) {
+      res.status(403).json({ message: "권한이 없습니다." });
+      return;
+    }
+    
+    res.status(200).json({ 
+      message: "이력서 조회 성공",
+      resume 
+    });
+  } catch (error) {
+    console.error("Resume fetch error:", error);
+    res.status(500).json({ 
+      message: "서버 오류",
+      details: error instanceof Error ? error.message : "알 수 없는 오류"
+    });
+  }
+};
+
+// ✅ 내 이력서 목록 조회
+export const getMyResumes = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!res.locals.jwtData?.id) {
+      res.status(401).json({ message: "인증되지 않은 사용자입니다." });
+      return;
+    }
+
+    const userId = res.locals.jwtData?.id;
+    const resumes = await Resume.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .select('title createdAt updatedAt content');
+    
+    res.status(200).json({ 
+      message: "이력서 목록 조회 성공",
+      count: resumes.length,
+      resumes 
+    });
+  } catch (error) {
+    console.error("Resume list fetch error:", error);
+    res.status(500).json({ 
+      message: "서버 오류",
+      details: error instanceof Error ? error.message : "알 수 없는 오류"
+    });
+  }
+};
+
+// ✅ 이력서 수정
+export const updateResume = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { resumeId } = req.params;
+    
+    if (!res.locals.jwtData?.id) {
+      res.status(401).json({ message: "인증되지 않은 사용자입니다." });
+      return;
+    }
+
+    const resume = await Resume.findById(resumeId);
+    
+    if (!resume) {
+      res.status(404).json({ message: "이력서를 찾을 수 없습니다." });
+      return;
+    }
+    
+    // 본인 확인
+    if (resume.user.toString() !== res.locals.jwtData?.id) {
+      res.status(403).json({ message: "권한이 없습니다." });
+      return;
+    }
+    
+    // 수정 가능한 필드들
+    const { title, content } = req.body;
+    
+    const updateData: any = {};
+    if (title) updateData.title = title;
+    if (content) updateData.content = content;
+    
+    const updatedResume = await Resume.findByIdAndUpdate(
+      resumeId,
+      updateData,
+      { new: true }
+    );
+    
+    res.status(200).json({ 
+      message: "이력서 수정 완료", 
+      resume: updatedResume 
+    });
+  } catch (error) {
+    console.error("Resume update error:", error);
+    res.status(500).json({ 
+      message: "서버 오류",
+      details: error instanceof Error ? error.message : "알 수 없는 오류"
+    });
+  }
+};
+
+// ✅ 이력서 삭제
+export const deleteResume = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { resumeId } = req.params;
+    
+    if (!res.locals.jwtData?.id) {
+      res.status(401).json({ message: "인증되지 않은 사용자입니다." });
+      return;
+    }
+
+    const resume = await Resume.findById(resumeId);
+    
+    if (!resume) {
+      res.status(404).json({ message: "이력서를 찾을 수 없습니다." });
+      return;
+    }
+    
+    // 본인 확인
+    if (resume.user.toString() !== res.locals.jwtData?.id) {
+      res.status(403).json({ message: "권한이 없습니다." });
+      return;
+    }
+    
+    // Resume 문서 삭제
+    await Resume.findByIdAndDelete(resumeId);
+    
+    // User 문서에서도 제거
+    await User.findByIdAndUpdate(res.locals.jwtData?.id, {
+      $pull: { resumes: resumeId }
+    });
+    
+    res.status(200).json({ 
+      message: "이력서 삭제 완료" 
+    });
+  } catch (error) {
+    console.error("Resume delete error:", error);
+    res.status(500).json({ 
+      message: "서버 오류",
+      details: error instanceof Error ? error.message : "알 수 없는 오류"
+    });
+  }
+};

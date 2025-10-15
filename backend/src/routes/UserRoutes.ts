@@ -5,7 +5,8 @@ import {
   updateUserInfo,
   changePassword,
   deleteUser,
-  me
+  me,
+  userLogout
 } from "../controllers/UserController";
 import  verifyToken  from "../middleware/verifyToken";
 import User from "../models/User";
@@ -14,6 +15,7 @@ const UserRoutes = express.Router();
 
 UserRoutes.post("/register", userSignUp);
 UserRoutes.post("/login", userLogin); 
+UserRoutes.post("/logout", userLogout);
 UserRoutes.put("/profile/:userId", verifyToken, updateUserInfo);
 UserRoutes.put("/profile/:userId/password", verifyToken, changePassword);
 UserRoutes.delete("/profile/:userId", verifyToken, deleteUser);

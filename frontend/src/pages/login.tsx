@@ -25,6 +25,7 @@ export default function Login() {
       console.log('✅ 로그인 성공:', response.data);
 
       if (response.status === 200) {
+        localStorage.setItem('isLoggedIn', 'true');
         alert(`${response.data.message} 메인 페이지로 이동합니다.`);
         navigate('/main');
       }

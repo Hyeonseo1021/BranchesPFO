@@ -5,13 +5,42 @@ import { Button } from '../components/ui/buttons';
 import { useNavigate } from 'react-router-dom';
 import Header from '../pages/Header';
 import Footer from '../pages/Footer';
-
-
+import axiosInstance from '../api/axios';
 
 export default function AIPFOPage() {
   const navigate = useNavigate();
   const [selection, setSelection] = useState<'portfolio' | 'resume'>('portfolio');
   const [isLoading, setIsLoading] = useState(false);
+  const [prompt, setPrompt] = useState('');
+
+  const handleGenerateResume = async () => {
+    try {
+      setIsLoading(true);
+
+      // 백엔드에 이력서 생성 요청
+      const response = await axiosInstance.post('/resume/generate', {
+        name: '', // 사용자 정보는 백엔드에서 토큰으로 가져올 수도 있음
+        email: '',
+        phone: '',
+        desiredJob: prompt || '프론트엔드 개발자',
+        address: { address: '' },
+        certificates: [],
+        experiences: [],
+        title: '내 이력서'
+      });
+
+      console.log('✅ 이력서 생성 성공:', response.data);
+
+      // 생성된 이력서 ID와 함께 결과 페이지로 이동
+      navigate(`/resume-result/${response.data.resumeId}`);
+      
+    } catch (error: any) {
+      console.error('❌ 이력서 생성 실패:', error);
+      alert(error.response?.data?.message || '이력서 생성에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <> {/* ✅ Fragment로 감싸기 시작 */}
 
@@ -88,29 +117,29 @@ export default function AIPFOPage() {
           </div>
 
           <div className="flex justify-center gap-8 mb-10">
-            <div
-  className="w-40 h-48 text-center cursor-pointer hover:shadow-xl transition"
-  onClick={() => {
-    const isLoggedIn = !!localStorage.getItem("token");
-    if (!isLoggedIn) {
-      alert("로그인이 필요합니다.");
-      navigate('/login');
-    } else {
-      setIsLoading(true); // 로딩 시작
-      setTimeout(() => {
-        setIsLoading(false); // 로딩 끝
-        navigate(selection === 'portfolio' ? '/portfolio-result' : '/resume-result');
-      }, 2000); // 2초 가상 대기
-    }
-  }}
->
-  <Card className="w-full h-full">
-    <CardContent className="flex flex-col items-center justify-center h-full">
-      <img src="/images/Branches_2.0_Logo.png" alt="내정보 불러오기" className="w-12 h-12 mb-2" />
-      <span>내정보 불러오기</span>
-    </CardContent>
-  </Card>
-</div>
+            <div className="w-40 h-48 text-center cursor-pointer hover:shadow-xl transition"
+          onClick={() => {
+            const isLoggedIn = !!localStorage.getItem("isLoggedIn"); // ← 'token'을 'isLoggedIn'으로 변경
+            if (!isLoggedIn) {
+              alert("로그인이 필요합니다.");
+              navigate('/login');
+            } else {
+              handleGenerateResume();
+              setIsLoading(true);
+              setTimeout(() => {
+                setIsLoading(false);
+                navigate(selection === 'portfolio' ? '/portfolio-result' : '/resume-result');
+              }, 2000);
+            }
+          }}
+        >
+          <Card className="w-full h-full">
+            <CardContent className="flex flex-col items-center justify-center h-full">
+              <img src="/images/Branches_2.0_Logo.png" alt="내정보 불러오기" className="w-12 h-12 mb-2" />
+              <span>내정보 불러오기</span>
+            </CardContent>
+          </Card>
+        </div>
 
             <div
               onClick={() => {

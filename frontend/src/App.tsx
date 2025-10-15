@@ -14,6 +14,7 @@ import ResumeResult from './pages/ResumeResult';
 import PortfolioResult from './pages/PortfolioResult';
 import JobRecommendPage from './pages/JobRecommendPage'; 
 import PortfolioEdit from './pages/PortfolioEdit'; 
+import Unauthorized from './pages/Unauthorized';
 
 function App() {
   return (
@@ -30,10 +31,11 @@ function App() {
         <Route path="/post/:id" element={<CmDetail />} />
         <Route path="/aichatbot" element={<AIChatbot />} />
         <Route path="/Mypage" element={<Mypage />} />
-        <Route path="/resume-result" element={<ResumeResult />} />
+        <Route path="/resume-result/:resumeId" element={<ResumeResult />} />
         <Route path="/portfolio-result" element={<PortfolioResult />} />
         <Route path="/jobrecommend" element={<JobRecommendPage />} /> 
-         <Route path="/portfolioedit" element={<PortfolioEdit />} /> 
+        <Route path="/portfolioedit" element={<PortfolioEdit />} /> 
+        <Route path="/unauthorized" element={<Unauthorized />} />
       </Routes>
     </Router>
   );
