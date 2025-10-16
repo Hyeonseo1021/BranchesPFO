@@ -50,7 +50,10 @@ export const getMyProfile = async (req: Request, res: Response): Promise<void> =
 export const updateBasicInfo = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const allowed = ["name", "birth", "phone", "address", "introduction"] as const;
+    const allowed = [
+      "name", "birth", "phone", "address", "introduction", "avatar",
+      "education", "experiences", "certificates", "skills", "tools", "projects"  // ✅ 추가
+    ] as const;
 
     const updateData: Record<string, any> = {};
     for (const k of allowed) {
@@ -62,7 +65,6 @@ export const updateBasicInfo = async (req: Request, res: Response) => {
       return;
     }
 
-    // ✅ 프로필 없으면 자동 생성
     await getOrCreateProfile(userId);
 
     const updated = await Profile.findOneAndUpdate(

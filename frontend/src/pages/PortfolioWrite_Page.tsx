@@ -351,37 +351,105 @@ export default function PortfolioPage() {
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">경력</h3>
 
-          {career.map((item, idx) => (
-            <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
-              <input
-                value={item}
-                onChange={(e) => {
-                  const updated = [...career];
-                  updated[idx] = e.target.value;
-                  setCareer(updated);
-                }}
-                placeholder="예: 삼성전자 / 백엔드 개발 / 2022~2023"
-                className="w-full border p-2 rounded text-sm"
-              />
+          {career.map((item, idx) => {
+            const [company = '', position = '', period = ''] = item.split(' / ');
 
-              <div className="text-right">
-                <button
-                  className="text-xs text-red-500"
-                  onClick={() => {
-                    const updated = [...career];
-                    updated.splice(idx, 1);
-                    setCareer(updated);
-                  }}
-                >
-                  삭제
-                </button>
+            const updateCareer = (index: number, fieldIndex: number, value: string) => {
+              const fields = (career[index] || '').split(' / ');
+              fields[fieldIndex] = value;
+              const newValue = fields.map(f => f || '').join(' / ');
+              const updated = [...career];
+              updated[index] = newValue;
+              setCareer(updated);
+            };
+
+            return (
+              <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
+                {/* 회사명 */}
+                <input
+                  value={company}
+                  onChange={(e) => updateCareer(idx, 0, e.target.value)}
+                  placeholder="회사명 (예: 삼성전자)"
+                  className="w-full border p-2 rounded text-sm"
+                />
+
+                {/* 직책 */}
+                <input
+                  value={position}
+                  onChange={(e) => updateCareer(idx, 1, e.target.value)}
+                  placeholder="직책 (예: 백엔드 개발자)"
+                  className="w-full border p-2 rounded text-sm"
+                />
+
+                {/* 근무기간 */}
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">입사일</label>
+                      <input
+                        type="date"
+                        value={period.split('~')[0]?.trim() || ''}
+                        onChange={(e) => {
+                          const end = period.split('~')[1]?.trim() || '';
+                          updateCareer(idx, 2, `${e.target.value} ~ ${end}`);
+                        }}
+                        className="w-full border p-2 rounded text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">퇴사일</label>
+                      <input
+                        type="date"
+                        disabled={period.includes('재직중')}
+                        value={
+                          period.includes('재직중')
+                            ? ''
+                            : period.split('~')[1]?.trim() || ''
+                        }
+                        onChange={(e) => {
+                          const start = period.split('~')[0]?.trim() || '';
+                          updateCareer(idx, 2, `${start} ~ ${e.target.value}`);
+                        }}
+                        className="w-full border p-2 rounded text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <label className="inline-flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={period.includes('재직중')}
+                      onChange={(e) => {
+                        const start = period.split('~')[0]?.trim() || '';
+                        const end = e.target.checked ? '재직중' : '';
+                        updateCareer(idx, 2, `${start} ~ ${end}`);
+                      }}
+                    />
+                    재직중
+                  </label>
+                </div>
+
+                {/* 삭제 버튼 */}
+                <div className="text-right">
+                  <button
+                    className="text-xs text-red-500"
+                    onClick={() => {
+                      const updated = [...career];
+                      updated.splice(idx, 1);
+                      setCareer(updated);
+                    }}
+                  >
+                    삭제
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <button
             className="text-xs text-blue-600 mt-2"
-            onClick={() => setCareer((prev) => [...prev, ''])}
+            onClick={() => setCareer((prev) => [...prev, ' /  / '])}
           >
             + 경력 추가
           </button>

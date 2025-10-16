@@ -16,8 +16,8 @@ interface ResumeData {
   education?: Array<{
     school: string;
     major: string;
+    degree: string;
     period: string;
-    status: string;
   }>;
   experience?: Array<{
     company: string;
@@ -30,7 +30,22 @@ interface ResumeData {
     issuedBy: string;
     date: string;
   }>;
-  introduction?: string;
+  skills?: string[];
+  tools?: string[];
+  projects?: Array<{
+    title: string;
+    description: string;
+    role: string;
+    techStack: string[];
+    period: string;
+    link: string;
+  }>;
+  coverLetter?: {
+    strengths: string;
+    growth: string;
+    personality: string;
+    motivation: string;
+  };
 }
 
 export default function ResumeResult() {
@@ -46,12 +61,32 @@ export default function ResumeResult() {
         const response = await axiosInstance.get(`/resume/${resumeId}`);
         console.log('✅ 이력서 조회 성공:', response.data);
         
-        // content가 문자열이면 파싱, 객체면 그대로 사용
-        const content = typeof response.data.resume.content === 'string' 
-          ? JSON.parse(response.data.resume.content)
-          : response.data.resume.content;
-          
-        setResumeData(content);
+        const resume = response.data.resume;
+        
+        const formattedData: ResumeData = {
+          personal: {
+            name: resume.name || '',
+            birth: resume.birth || '',
+            phone: resume.phone || '',
+            email: resume.email || '',
+            address: resume.address || ''
+          },
+          education: resume.education || [],
+          experience: resume.experiences || [],
+          certificates: resume.certificates || [],
+          skills: resume.skills || [],
+          tools: resume.tools || [],
+          projects: resume.projects || [],
+          coverLetter: resume.coverLetter || {
+            strengths: '',
+            growth: '',
+            personality: '',
+            motivation: ''
+          }
+        };
+        
+        console.log('📋 변환된 데이터:', formattedData);
+        setResumeData(formattedData);
       } catch (error: any) {
         console.error('❌ 이력서 조회 실패:', error);
         alert('이력서를 불러오는데 실패했습니다.');
@@ -152,20 +187,26 @@ export default function ResumeResult() {
                       <th className="border border-black p-2">입학년월</th>
                       <th className="border border-black p-2">졸업년월</th>
                       <th className="border border-black p-2">학교명</th>
-                      <th className="border border-black p-2">소재지</th>
-                      <th className="border border-black p-2">평균학점</th>
+                      <th className="border border-black p-2">전공</th>
+                      <th className="border border-black p-2">학위</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {resumeData.education?.map((edu, idx) => (
-                      <tr key={idx} className="h-[45px]">
-                        <td className="border border-black p-2">{edu.period?.split('~')[0] || '-'}</td>
-                        <td className="border border-black p-2">{edu.period?.split('~')[1] || '-'}</td>
-                        <td className="border border-black p-2">{edu.school}</td>
-                        <td className="border border-black p-2">-</td>
-                        <td className="border border-black p-2">-</td>
+                    {resumeData.education && resumeData.education.length > 0 ? (
+                      resumeData.education.map((edu, idx) => (
+                        <tr key={idx} className="h-[45px]">
+                          <td className="border border-black p-2">{edu.period?.split('~')[0]?.trim() || '-'}</td>
+                          <td className="border border-black p-2">{edu.period?.split('~')[1]?.trim() || '-'}</td>
+                          <td className="border border-black p-2">{edu.school}</td>
+                          <td className="border border-black p-2">{edu.major || '-'}</td>
+                          <td className="border border-black p-2">{edu.degree || '-'}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr className="h-[45px]">
+                        <td colSpan={5} className="border border-black p-2 text-center">학력 정보 없음</td>
                       </tr>
-                    )) || <tr className="h-[45px]"><td colSpan={5} className="border border-black p-2 text-center">학력 정보 없음</td></tr>}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -179,20 +220,24 @@ export default function ResumeResult() {
                       <th className="border border-black p-2">근무회사</th>
                       <th className="border border-black p-2">근무기간</th>
                       <th className="border border-black p-2">직위</th>
-                      <th className="border border-black p-2">담당부서</th>
-                      <th className="border border-black p-2">퇴직사유</th>
+                      <th className="border border-black p-2">담당업무</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {resumeData.experience?.map((exp, idx) => (
-                      <tr key={idx} className="h-[45px]">
-                        <td className="border border-black p-2">{exp.company}</td>
-                        <td className="border border-black p-2">{exp.period}</td>
-                        <td className="border border-black p-2">{exp.position}</td>
-                        <td className="border border-black p-2">-</td>
-                        <td className="border border-black p-2">-</td>
+                    {resumeData.experience && resumeData.experience.length > 0 ? (
+                      resumeData.experience.map((exp, idx) => (
+                        <tr key={idx} className="h-[45px]">
+                          <td className="border border-black p-2">{exp.company}</td>
+                          <td className="border border-black p-2">{exp.period}</td>
+                          <td className="border border-black p-2">{exp.position}</td>
+                          <td className="border border-black p-2">{exp.description || '-'}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr className="h-[45px]">
+                        <td colSpan={4} className="border border-black p-2 text-center">경력 정보 없음</td>
                       </tr>
-                    )) || <tr className="h-[45px]"><td colSpan={5} className="border border-black p-2 text-center">경력 정보 없음</td></tr>}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -209,13 +254,19 @@ export default function ResumeResult() {
                     </tr>
                   </thead>
                   <tbody>
-                    {resumeData.certificates?.map((cert, idx) => (
-                      <tr key={idx} className="h-[45px]">
-                        <td className="border border-black p-2">{cert.date}</td>
-                        <td className="border border-black p-2">{cert.name}</td>
-                        <td className="border border-black p-2">{cert.issuedBy}</td>
+                    {resumeData.certificates && resumeData.certificates.length > 0 ? (
+                      resumeData.certificates.map((cert, idx) => (
+                        <tr key={idx} className="h-[45px]">
+                          <td className="border border-black p-2">{cert.date}</td>
+                          <td className="border border-black p-2">{cert.name}</td>
+                          <td className="border border-black p-2">{cert.issuedBy}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr className="h-[45px]">
+                        <td colSpan={3} className="border border-black p-2 text-center">자격증 정보 없음</td>
                       </tr>
-                    )) || <tr className="h-[45px]"><td colSpan={3} className="border border-black p-2 text-center">자격증 정보 없음</td></tr>}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -223,14 +274,47 @@ export default function ResumeResult() {
           </div>
         </main>
 
-        {/* 자기소개서 */}
+        {/* 자기소개서 - 4개 섹션 */}
         <main className="w-[210mm] h-[297mm] bg-white border border-black shadow-lg p-6 text-[13px] leading-normal">
           <h3 className="text-base font-bold mb-2">☆ 자기 소개서</h3>
-          <div className="border-t border-black h-[250mm]">
-            <div className="flex h-full">
-              <div className="w-[25%] bg-gray-100 border-r border-black p-2 font-bold">자기소개</div>
-              <div className="w-[75%] p-4 whitespace-pre-wrap">
-                {resumeData.introduction || '자기소개 내용이 생성되지 않았습니다.'}
+          <div className="border-t border-black flex flex-col">
+            {/* 주요경력 및 업무강점 */}
+            <div className="flex border-b border-black min-h-[60mm]">
+              <div className="w-[25%] bg-gray-100 border-r border-black p-3 font-bold flex items-start">
+                주요경력 및<br/>업무강점
+              </div>
+              <div className="w-[75%] p-3 text-[12px] leading-relaxed whitespace-pre-wrap">
+                {resumeData.coverLetter?.strengths || '내용이 생성되지 않았습니다.'}
+              </div>
+            </div>
+
+            {/* 성장과정 */}
+            <div className="flex border-b border-black min-h-[60mm]">
+              <div className="w-[25%] bg-gray-100 border-r border-black p-3 font-bold flex items-start">
+                성장과정
+              </div>
+              <div className="w-[75%] p-3 text-[12px] leading-relaxed whitespace-pre-wrap">
+                {resumeData.coverLetter?.growth || '내용이 생성되지 않았습니다.'}
+              </div>
+            </div>
+
+            {/* 성격의 장단점 */}
+            <div className="flex border-b border-black min-h-[60mm]">
+              <div className="w-[25%] bg-gray-100 border-r border-black p-3 font-bold flex items-start">
+                성격의<br/>장단점
+              </div>
+              <div className="w-[75%] p-3 text-[12px] leading-relaxed whitespace-pre-wrap">
+                {resumeData.coverLetter?.personality || '내용이 생성되지 않았습니다.'}
+              </div>
+            </div>
+
+            {/* 지원동기 및 입사포부 */}
+            <div className="flex min-h-[60mm]">
+              <div className="w-[25%] bg-gray-100 border-r border-black p-3 font-bold flex items-start">
+                지원동기 및<br/>입사포부
+              </div>
+              <div className="w-[75%] p-3 text-[12px] leading-relaxed whitespace-pre-wrap">
+                {resumeData.coverLetter?.motivation || '내용이 생성되지 않았습니다.'}
               </div>
             </div>
           </div>

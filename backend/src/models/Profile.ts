@@ -17,6 +17,7 @@ const ProfileSchema = new mongoose.Schema({
   // 기본 인적 사항
   name: { type: String},
   birth: { type: String },
+  email: { type: String },
   phone: { type: String },
   address: { type: String },
 

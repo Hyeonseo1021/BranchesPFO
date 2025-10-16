@@ -11,63 +11,59 @@ const ResumeSchema = new mongoose.Schema({
   title: { type: String, required: true, default: 'AI 생성 이력서' },
   template: { type: String, enum: ['default', 'modern'], default: 'default' },
   photoUrl: { type: String, default: '' },
-  appliedPosition: { type: String, default: '' }, // 응시직종
+  appliedPosition: { type: String, default: '' },
   name: { type: String, default: '' },
-  gender: { type: String, default: '' },
   birth: { type: String, default: '' },
   address: { type: String, default: '' },
+  email: {type:String, default: ''},
   phone: { type: String, default: '' },
   mobile: { type: String, default: '' },
 
-  // 학력
+  // ✅ 학력 (Profile과 동일하게)
   education: [{
-    enterAt: String,
-    graduateAt: String,
     school: String,
-    location: String,
-    gpa: String
+    major: String,
+    degree: String,
+    period: String
   }],
 
-  // 경력
+  // ✅ 경력 (Profile과 동일하게)
   experiences: [{
     company: String,
-    period: String,
     position: String,
-    department: String,
-    reasonToLeave: String
+    period: String,
+    description: String
   }],
 
-  // 자격증
+  // ✅ 자격증 (Profile과 동일하게)
   certificates: [{
-    year: String,
     name: String,
-    issuedBy: String
+    issuedBy: String,
+    date: String
   }],
 
-  // 어학능력
-  languages: [{
-    category: String,
-    testName: String,
-    score: String,
-    year: String
+  // ✅ 기술 역량 (Profile에서 추가)
+  skills: [String],
+
+  // ✅ 활용 툴 (Profile에서 추가)
+  tools: [String],
+
+  // ✅ 프로젝트 경험 (Profile에서 추가)
+  projects: [{
+    title: String,
+    description: String,
+    role: String,
+    techStack: [String],
+    period: String,
+    link: String
   }],
 
-  // 가족사항
-  family: [{
-    relation: String,
-    name: String,
-    age: String,
-    education: String,
-    job: String,
-    mobile: String
-  }],
-
-  // 자기소개서(4개 섹션)
+  // 자기소개서 (4개 섹션)
   coverLetter: {
-    strengths: { type: String, default: '' },   // 주요경력 / 업무강점
-    growth: { type: String, default: '' },      // 성장과정
-    personality: { type: String, default: '' }, // 성격의 장단점
-    motivation: { type: String, default: '' }   // 지원동기 및 입사포부
+    strengths: { type: String, default: '' },
+    growth: { type: String, default: '' },
+    personality: { type: String, default: '' },
+    motivation: { type: String, default: '' }
   }
 
 }, { timestamps: true });

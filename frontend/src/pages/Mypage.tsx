@@ -49,11 +49,11 @@ export default function Mypage() {
         setIntro(profile.introduction || '');
         
         setEducation(profile.education?.map((e: any) => 
-          `${e.school} (${e.period})`
+          `${e.school || ''} / ${e.major || ''} / ${e.degree || ''} / (${e.period || ''})`
         ) || []);
         
         setCareer(profile.experiences?.map((exp: any) => 
-          `${exp.company} - ${exp.position} (${exp.period})`
+          `${exp.company} / ${exp.position} (${exp.period})`
         ) || []);
         
         setCertificates(profile.certificates?.map((c: any) => 

@@ -1,5 +1,5 @@
+import 'dotenv/config';
 import express from "express";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors"; // cors 추가
 import cookieParser from "cookie-parser";
@@ -9,7 +9,6 @@ import communityRoutes from "./routes/CommunityRoutes"; // 경로에 공백이 �
 import chatRoutes from "./routes/ChatRoutes"; // 추가
 import profileRoutes from "./routes/ProfileRoutes";
 
-dotenv.config();
 const app = express();
 
 app.use(cors({

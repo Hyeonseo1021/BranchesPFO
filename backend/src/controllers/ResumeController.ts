@@ -7,7 +7,6 @@ import Resume from "../models/Resume";
 // Create A Resume
 export const generateResume = async (req: Request, res: Response): Promise<void> => {
   try {
-    // 1~3단계: 그대로
     if (!res.locals.jwtData?.id) {
       res.status(401).json({ message: "인증되지 않은 사용자입니다." });
       return;
@@ -18,60 +17,86 @@ export const generateResume = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const { name, email, phone, desiredJob, address, certificates, experiences, title } = req.body;
+    const { name, email, phone, desiredJob, address, certificates, experiences, introduction, skills, tools, projects, education, birth, title } = req.body;
 
-    const prompt = `
-      당신은 대한민국 HR 전문가이자 이력서 작성 코치입니다.
-      아래 사용자 정보를 기반으로 "표준 국문 이력서"를 작성하세요.
+    console.log('📥 받은 education:', education);
 
-      ⚙️ 출력 형식 (JSON)
-      {
-        "personal": { "name": "", "birth": "", "phone": "", "email": "", "address": "" },
-        "education": [ { "school": "", "major": "", "period": "", "status": "" } ],
-        "experience": [ { "company": "", "position": "", "period": "", "description": "" } ],
-        "certificates": [ { "name": "", "issuedBy": "", "date": "" } ],
-        "skills": [ "" ],
-        "projects": [ { "name": "", "role": "", "techStack": "", "description": "" } ],
-        "introduction": "자기소개 및 포부 (500자 이내)"
-      }
+    // ✅ 간단한 프롬프트 - coverLetter만 생성
+    const prompt = `당신은 대한민국 HR 전문가이자 이력서 작성 코치입니다.
 
-      ⚙️ 작성 조건
-      - 반드시 위 JSON 구조에 맞게만 출력하세요 (그 외 문장 금지)
-      - 불필요한 수식어, 존칭, 이모티콘은 사용하지 마세요
-      - 간결하고 구체적으로 작성하세요
-      - 모든 내용은 한국어로 작성하세요
+<사용자_정보>
+이름: ${name}
+희망직무: ${desiredJob || "미입력"}
+자기소개: ${introduction || "없음"}
+경력: ${experiences?.map((e: any) => `${e.company} ${e.position}`).join(", ") || "신입"}
+기술: ${skills?.join(", ") || "없음"}
+</사용자_정보>
 
-      사용자 정보:
-      이름: ${name || "미입력"}
-      이메일: ${email || "미입력"}
-      전화번호: ${phone || "미입력"}
-      희망직무: ${desiredJob || "미입력"}
-      주소: ${address?.address || "미입력"}
-      자격증: ${certificates?.map((c: any) => c.name).join(", ") || "없음"}
-      경력: ${experiences?.map((e: any) => `${e.company} (${e.position})`).join(", ") || "없음"}
-    `;
+위 정보를 바탕으로 자기소개서를 4개 섹션으로 작성하세요.
+다음 JSON 형식으로만 응답하세요:
 
-    // 4) AI로 이력서 생성 (그대로)
+{
+  "coverLetter": {
+    "strengths": "주요 경력과 업무 강점 (300자)",
+    "growth": "성장 과정 (300자)",
+    "personality": "성격의 장단점 (300자)",
+    "motivation": "지원동기 및 입사포부 (300자)"
+  }
+}
+
+각 섹션은 구체적이고 설득력 있게 한국어로 작성하세요.`;
+
+    console.log('🤖 AI 호출 시작...');
     const aiResult = await generateResumeFromPrompt(prompt);
+    console.log('🤖 AI 응답:', JSON.stringify(aiResult, null, 2));
 
-    // ✅ 5) 별도 Resume 문서 생성 (여기만 변경)
+    // ✅ AI는 coverLetter만, 나머지는 Profile 데이터 그대로
     const resumeDoc = await Resume.create({
       user: user._id,
       title: title || "AI 생성 이력서",
-      content: aiResult,           // 스키마에서 content: Object 또는 String이면 그대로 OK
+      
+      // ✅ 기본 정보 - req.body에서 직접
+      name: name || "",
+      email: email || "",
+      phone: phone || "",
+      birth: birth || "",
+      address: address?.address || address || "",
+      
+      // ✅ Profile 데이터 그대로 복사 (AI 의존 안 함)
+      education: education || [],
+      experiences: experiences || [],
+      certificates: certificates || [],
+      skills: skills || [],
+      tools: tools || [],
+      projects: projects || [],
+      
+      // ✅ AI가 생성한 자기소개서만 사용
+      coverLetter: {
+        strengths: aiResult.coverLetter?.strengths || '',
+        growth: aiResult.coverLetter?.growth || '',
+        personality: aiResult.coverLetter?.personality || '',
+        motivation: aiResult.coverLetter?.motivation || ''
+      }
     });
 
-    // ✅ 6) User.resumes에 ObjectId만 추가 (참조 방식)
+    console.log('💾 저장 완료:', {
+      id: resumeDoc._id,
+      name: resumeDoc.name,
+      birth: resumeDoc.birth,
+      email: resumeDoc.email,
+      educationCount: resumeDoc.education?.length,
+      experiencesCount: resumeDoc.experiences?.length
+    });
+
     await User.findByIdAndUpdate(user._id, { $push: { resumes: resumeDoc._id } });
 
-    // 7) 성공 응답
     res.status(200).json({
       message: "이력서 생성 및 저장 완료",
       resumeId: resumeDoc._id,
       resume: resumeDoc,
     });
   } catch (error) {
-    console.error("Resume generation error:", error);
+    console.error("❌ Resume generation error:", error);
     res.status(500).json({
       error: "이력서 생성 실패",
       details: error instanceof Error ? error.message : "알 수 없는 오류",
