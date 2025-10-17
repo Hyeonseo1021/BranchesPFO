@@ -3,14 +3,48 @@ import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../api/axios';  // ✅ 추가
+import axiosInstance from '../api/axios';
 
-export default function PortfolioPage() {
+// 키워드 옵션 정의
+const KEYWORD_OPTIONS = {
+  positions: [
+    '백엔드 개발자', '프론트엔드 개발자', '풀스택 개발자',
+    'AI/ML 엔지니어', '데이터 엔지니어', 'DevOps 엔지니어',
+    '모바일 개발자', '게임 개발자', 'QA 엔지니어', '보안 전문가'
+  ],
+  strengths: [
+    '빠른 학습 능력', '문제 해결 능력', '책임감', '협업 능력',
+    '커뮤니케이션', '리더십', '창의성', '꼼꼼함',
+    '적극성', '분석력', '인내심', '도전정신'
+  ],
+  interests: [
+    '웹 개발', '모바일 앱', 'AI/머신러닝', '클라우드/인프라',
+    '데이터베이스', '블록체인', 'UI/UX 디자인', '보안',
+    '빅데이터', 'IoT', 'AR/VR', '게임 개발'
+  ],
+  goals: [
+    '기술 전문가로 성장', '문제 해결형 개발자', '팀 리더/매니저',
+    '오픈소스 기여', '스타트업 창업', '글로벌 기업 근무',
+    '사회 기여', '지속적 학습', '멘토링', '기술 블로그 운영'
+  ]
+};
+
+export default function ProfilePage() {
   const [name, setName] = useState('');
   const [birth, setBirth] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
-  const [intro, setIntro] = useState('');
+  
+  // ✅ 키워드 선택
+  const [selectedKeywords, setSelectedKeywords] = useState({
+    positions: [] as string[],
+    strengths: [] as string[],
+    interests: [] as string[],
+    goals: [] as string[]
+  });
+  
+
+  
   const [education, setEducation] = useState<string[]>([]);
   const [career, setCareer] = useState<string[]>([]);
   const [certificates, setCertificates] = useState<string[]>([]);
@@ -19,19 +53,17 @@ export default function PortfolioPage() {
   const [projects, setProjects] = useState<string[]>([]);
   const [photo, setPhoto] = useState('');
   const [agree, setAgree] = useState(false);
-  const [userId, setUserId] = useState<string>('');  // ✅ userId state 추가
+  const [userId, setUserId] = useState<string>('');
   const navigate = useNavigate();
 
-  /** ✅ 프로필 불러오기 (쿠키 기반 인증) */
+  /** 프로필 불러오기 */
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        // ✅ 먼저 현재 사용자 정보 가져오기
         const meRes = await axiosInstance.get('/auth/me');
         const currentUserId = meRes.data.user._id;
         setUserId(currentUserId);
 
-        // ✅ 프로필 정보 가져오기
         const profileRes = await axiosInstance.get(`/profile/${currentUserId}`);
         const data = profileRes.data;
 
@@ -40,7 +72,17 @@ export default function PortfolioPage() {
           setBirth(data.birth || "");
           setPhone(data.phone || "");
           setAddress(data.address || "");
-          setIntro(data.introduction || "");
+          
+          // ✅ 키워드 데이터 불러오기
+          if (data.introductionKeywords) {
+            setSelectedKeywords({
+              positions: data.introductionKeywords.positions || [],
+              strengths: data.introductionKeywords.strengths || [],
+              interests: data.introductionKeywords.interests || [],
+              goals: data.introductionKeywords.goals || []
+            });
+          }
+          
           setEducation(
             (data.education || []).map(
               (e: any) => `${e.schoolType || ''} / ${e.school || ""} / ${e.major || ""} / ${e.degree || ""} / ${e.period || ""}`
@@ -50,7 +92,9 @@ export default function PortfolioPage() {
           setCertificates((data.certificates || []).map((c: any) => c.name));
           setSkills(data.skills || []);
           setTools(data.tools || []);
-          setProjects((data.projects || []).map((p: any) => `${p.title}::${p.description}`));
+          setProjects((data.projects || []).map((p: any) => 
+            `${p.title || ''}||${p.description || ''}||${p.role || ''}||${(p.techStack || []).join(',')}||${p.period || ''}||${p.link || ''}`
+          ));
           setPhoto(data.avatar || "");
         }
       } catch (err: any) {
@@ -64,7 +108,22 @@ export default function PortfolioPage() {
     fetchProfile();
   }, [navigate]);
 
-  /** ✅ 저장 버튼 - axiosInstance 사용 */
+  /** 키워드 토글 */
+  const toggleKeyword = (category: keyof typeof selectedKeywords, keyword: string) => {
+    setSelectedKeywords(prev => {
+      const current = prev[category];
+      const isSelected = current.includes(keyword);
+      
+      return {
+        ...prev,
+        [category]: isSelected
+          ? current.filter(k => k !== keyword)
+          : [...current, keyword]
+      };
+    });
+  };
+
+  /** 저장 */
   const handleSave = async () => {
     if (!agree) {
       alert("개인정보 수집 및 이용에 동의해주세요.");
@@ -76,13 +135,20 @@ export default function PortfolioPage() {
       return;
     }
 
+    // 최소 3개씩 선택 확인
+    const { positions, strengths, interests, goals } = selectedKeywords;
+    if (positions.length < 3 || strengths.length < 3 || interests.length < 3 || goals.length < 3) {
+      alert('자기소개 키워드를 각 카테고리에서 최소 3개 이상 선택해주세요!');
+      return;
+    }
+
     const body = {
       name,
       birth,
       phone,
       address,
-      introduction: intro,
       avatar: photo,
+      introductionKeywords: selectedKeywords,
       education: education.map((item) => {
         const [schoolType, school, major, degree, period] = item.split(" / ");
         return { schoolType, school, major, degree, period };
@@ -95,15 +161,20 @@ export default function PortfolioPage() {
       skills,
       tools,
       projects: projects.map((item) => {
-        const [title, desc] = item.split("::");
-        return { title, description: desc };
+        const [title, description, role, techStackStr, period, link] = item.split('||');
+        return { 
+          title, 
+          description, 
+          role, 
+          techStack: techStackStr ? techStackStr.split(',').filter(t => t.trim()) : [], 
+          period, 
+          link 
+        };
       }),
     };
 
     try {
-      // ✅ axiosInstance 사용 (쿠키 자동 전송)
       await axiosInstance.patch(`/profile/${userId}/basic`, body);
-
       alert("서버에 저장되었습니다.");
       navigate("/mypage");
     } catch (err: any) {
@@ -117,7 +188,7 @@ export default function PortfolioPage() {
     }
   };
 
-  /** 주소 검색 - axiosInstance 사용 */
+  /** 주소 검색 */
   const handleAddressSearch = async () => {
     if (!address) {
       alert('주소를 입력해주세요.');
@@ -139,13 +210,12 @@ export default function PortfolioPage() {
       <div className="h-8 bg-[#E6FCB9]" />
 
       <div className="max-w-5xl mx-auto py-10 px-6 text-sm text-gray-800">
-        <h2 className="text-xl font-bold text-center mb-8">해당 정보를 바탕으로 PFO AI가 포트폴리오,이력서를 만들 수 있어요 !</h2>
+        <h2 className="text-xl font-bold text-center mb-8">해당 정보를 바탕으로 PFO AI가 포트폴리오, 이력서를 만들 수 있어요!</h2>
 
         {/* 인적사항 */}
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">인적사항</h3>
           <div className="flex gap-6">
-            {/* 사진 업로드 */}
             <div>
               <img
                 src={photo || '/user-avatar.png'}
@@ -169,7 +239,6 @@ export default function PortfolioPage() {
               />
             </div>
 
-            {/* 텍스트 입력란 */}
             <div className="grid grid-cols-2 gap-4 flex-1">
               <div>
                 <label className="block text-xs mb-1">이름</label>
@@ -204,24 +273,112 @@ export default function PortfolioPage() {
           </div>
         </section>
 
-        {/* 자기소개 */}
+        {/* ✅ 자기소개 키워드 선택 */}
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">자기소개</h3>
-          <textarea
-            value={intro}
-            onChange={(e) => setIntro(e.target.value)}
-            className="w-full h-28 border p-3 rounded text-sm"
-            placeholder="강점, 목표, 관심 분야를 간단하게 작성해주세요"
-          />
+          <h3 className="text-lg font-semibold mb-4">자기소개 키워드 선택</h3>
+          <p className="text-xs text-gray-600 mb-6">
+            각 카테고리에서 최소 3개 이상 선택해주세요. 
+            선택한 키워드는 이력서 생성 시 AI가 자기소개를 작성하는데 활용됩니다.
+          </p>
+
+          {/* 1. 희망 직무 */}
+          <div className="mb-6">
+            <h4 className="font-semibold mb-2 flex items-center gap-2">
+              💼 희망 직무/포지션
+              <span className="text-xs text-gray-500">({selectedKeywords.positions.length}/최소 3개)</span>
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {KEYWORD_OPTIONS.positions.map(keyword => (
+                <button
+                  key={keyword}
+                  onClick={() => toggleKeyword('positions', keyword)}
+                  className={`px-3 py-2 rounded text-sm transition-colors ${
+                    selectedKeywords.positions.includes(keyword)
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {keyword}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 2. 나의 강점 */}
+          <div className="mb-6">
+            <h4 className="font-semibold mb-2 flex items-center gap-2">
+              💪 나의 강점
+              <span className="text-xs text-gray-500">({selectedKeywords.strengths.length}/최소 3개)</span>
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {KEYWORD_OPTIONS.strengths.map(keyword => (
+                <button
+                  key={keyword}
+                  onClick={() => toggleKeyword('strengths', keyword)}
+                  className={`px-3 py-2 rounded text-sm transition-colors ${
+                    selectedKeywords.strengths.includes(keyword)
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {keyword}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. 관심 기술/분야 */}
+          <div className="mb-6">
+            <h4 className="font-semibold mb-2 flex items-center gap-2">
+              🎯 관심 기술/분야
+              <span className="text-xs text-gray-500">({selectedKeywords.interests.length}/최소 3개)</span>
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {KEYWORD_OPTIONS.interests.map(keyword => (
+                <button
+                  key={keyword}
+                  onClick={() => toggleKeyword('interests', keyword)}
+                  className={`px-3 py-2 rounded text-sm transition-colors ${
+                    selectedKeywords.interests.includes(keyword)
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {keyword}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 4. 목표/지향점 */}
+          <div className="mb-6">
+            <h4 className="font-semibold mb-2 flex items-center gap-2">
+              🚀 목표/지향점
+              <span className="text-xs text-gray-500">({selectedKeywords.goals.length}/최소 3개)</span>
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {KEYWORD_OPTIONS.goals.map(keyword => (
+                <button
+                  key={keyword}
+                  onClick={() => toggleKeyword('goals', keyword)}
+                  className={`px-3 py-2 rounded text-sm transition-colors ${
+                    selectedKeywords.goals.includes(keyword)
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {keyword}
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* 학력 */}
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">학력</h3>
-
           {education.map((item, idx) => {
             const [schoolType = '', schoolName = '', major = '', degree = '', period = ''] = item.split(' / ');
-
             const updateItem = (index: number, fieldIndex: number, value: string) => {
               const fields = (education[index] || '').split(' / ');
               fields[fieldIndex] = value;
@@ -230,7 +387,6 @@ export default function PortfolioPage() {
               updated[index] = newValue;
               setEducation(updated);
             };
-
             return (
               <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
                 <div className="grid grid-cols-2 gap-2">
@@ -244,7 +400,6 @@ export default function PortfolioPage() {
                     <option value="대학교">대학교</option>
                     <option value="대학원">대학원</option>
                   </select>
-
                   <div className="flex gap-2">
                     <input
                       value={schoolName}
@@ -260,21 +415,18 @@ export default function PortfolioPage() {
                     </button>
                   </div>
                 </div>
-
                 <input
                   value={major}
                   onChange={(e) => updateItem(idx, 2, e.target.value)}
                   className="w-full border p-2 rounded text-sm"
                   placeholder="전공 (예: 컴퓨터공학과)"
                 />
-
                 <input
                   value={degree}
                   onChange={(e) => updateItem(idx, 3, e.target.value)}
                   className="w-full border p-2 rounded text-sm"
                   placeholder="학위 (예: 학사, 석사, 박사)"
                 />
-
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2 items-center">
                     <div>
@@ -289,17 +441,12 @@ export default function PortfolioPage() {
                         className="w-full border p-2 rounded text-sm"
                       />
                     </div>
-
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">졸업일</label>
                       <input
                         type="date"
                         disabled={period.includes('재학중')}
-                        value={
-                          period.includes('재학중')
-                            ? ''
-                            : period.split('~')[1]?.trim() || ''
-                        }
+                        value={period.includes('재학중') ? '' : period.split('~')[1]?.trim() || ''}
                         onChange={(e) => {
                           const start = period.split('~')[0]?.trim() || '';
                           updateItem(idx, 4, `${start} ~ ${e.target.value}`);
@@ -308,7 +455,6 @@ export default function PortfolioPage() {
                       />
                     </div>
                   </div>
-
                   <label className="inline-flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
@@ -322,7 +468,6 @@ export default function PortfolioPage() {
                     재학중
                   </label>
                 </div>
-
                 <div className="text-right">
                   <button
                     className="text-xs text-red-500"
@@ -338,7 +483,6 @@ export default function PortfolioPage() {
               </div>
             );
           })}
-
           <button
             className="text-xs text-blue-600 mt-2"
             onClick={() => setEducation(prev => [...prev, ' / / / / '])}
@@ -350,10 +494,8 @@ export default function PortfolioPage() {
         {/* 경력 */}
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">경력</h3>
-
           {career.map((item, idx) => {
             const [company = '', position = '', period = ''] = item.split(' / ');
-
             const updateCareer = (index: number, fieldIndex: number, value: string) => {
               const fields = (career[index] || '').split(' / ');
               fields[fieldIndex] = value;
@@ -362,26 +504,20 @@ export default function PortfolioPage() {
               updated[index] = newValue;
               setCareer(updated);
             };
-
             return (
               <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
-                {/* 회사명 */}
                 <input
                   value={company}
                   onChange={(e) => updateCareer(idx, 0, e.target.value)}
                   placeholder="회사명 (예: 삼성전자)"
                   className="w-full border p-2 rounded text-sm"
                 />
-
-                {/* 직책 */}
                 <input
                   value={position}
                   onChange={(e) => updateCareer(idx, 1, e.target.value)}
                   placeholder="직책 (예: 백엔드 개발자)"
                   className="w-full border p-2 rounded text-sm"
                 />
-
-                {/* 근무기간 */}
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
@@ -396,17 +532,12 @@ export default function PortfolioPage() {
                         className="w-full border p-2 rounded text-sm"
                       />
                     </div>
-
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">퇴사일</label>
                       <input
                         type="date"
                         disabled={period.includes('재직중')}
-                        value={
-                          period.includes('재직중')
-                            ? ''
-                            : period.split('~')[1]?.trim() || ''
-                        }
+                        value={period.includes('재직중') ? '' : period.split('~')[1]?.trim() || ''}
                         onChange={(e) => {
                           const start = period.split('~')[0]?.trim() || '';
                           updateCareer(idx, 2, `${start} ~ ${e.target.value}`);
@@ -415,7 +546,6 @@ export default function PortfolioPage() {
                       />
                     </div>
                   </div>
-
                   <label className="inline-flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
@@ -429,8 +559,6 @@ export default function PortfolioPage() {
                     재직중
                   </label>
                 </div>
-
-                {/* 삭제 버튼 */}
                 <div className="text-right">
                   <button
                     className="text-xs text-red-500"
@@ -446,7 +574,6 @@ export default function PortfolioPage() {
               </div>
             );
           })}
-
           <button
             className="text-xs text-blue-600 mt-2"
             onClick={() => setCareer((prev) => [...prev, ' /  / '])}
@@ -485,7 +612,6 @@ export default function PortfolioPage() {
 
         {/* 기술, 툴 */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* 기술 역량 */}
           <div className="bg-white border p-6 rounded shadow-sm">
             <h3 className="font-semibold mb-2">기술 역량</h3>
             {skills.map((skill, idx) => (
@@ -519,8 +645,6 @@ export default function PortfolioPage() {
               + 추가
             </button>
           </div>
-
-          {/* 툴/도구 */}
           <div className="bg-white border p-6 rounded shadow-sm">
             <h3 className="font-semibold mb-2">툴 / 도구</h3>
             {tools.map((tool, idx) => (
@@ -559,30 +683,56 @@ export default function PortfolioPage() {
         {/* 프로젝트 */}
         <section className="bg-white border p-6 rounded mb-8 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">프로젝트 경험</h3>
-
           {projects.map((item, idx) => {
-            const [title = '', detail = ''] = item.split('::');
-
-            const updateProject = (newTitle: string, newDetail: string) => {
+            const [title = '', description = '', role = '', techStackStr = '', period = '', link = ''] = item.split('||');
+            const techStack = techStackStr ? techStackStr.split(',') : [];
+            
+            const updateProject = (field: number, value: string) => {
+              const fields = item.split('||');
+              fields[field] = value;
               const updated = [...projects];
-              updated[idx] = `${newTitle}::${newDetail}`;
+              updated[idx] = fields.join('||');
               setProjects(updated);
             };
-
+            
             return (
               <div key={idx} className="mb-4 p-4 border rounded bg-gray-50 space-y-2">
                 <input
                   value={title}
-                  onChange={(e) => updateProject(e.target.value, detail)}
-                  placeholder="예: PFO 플랫폼 개발 / 프론트엔드 / Next.js"
+                  onChange={(e) => updateProject(0, e.target.value)}
+                  placeholder="프로젝트명 (예: PFO 플랫폼 개발)"
                   className="w-full border p-2 rounded text-sm"
                 />
                 <textarea
-                  value={detail}
-                  onChange={(e) => updateProject(title, e.target.value)}
-                  placeholder="상세 설명을 입력하세요. (예: 4인 팀으로 프론트엔드 담당. React와 Tailwind로 개발. 6주간 진행 등)"
+                  value={description}
+                  onChange={(e) => updateProject(1, e.target.value)}
+                  placeholder="프로젝트 설명"
                   className="w-full border p-2 rounded text-sm"
-                  rows={3}
+                  rows={2}
+                />
+                <input
+                  value={role}
+                  onChange={(e) => updateProject(2, e.target.value)}
+                  placeholder="담당 역할 (예: 프론트엔드 개발)"
+                  className="w-full border p-2 rounded text-sm"
+                />
+                <input
+                  value={techStackStr}
+                  onChange={(e) => updateProject(3, e.target.value)}
+                  placeholder="기술 스택 (쉼표로 구분, 예: React,TypeScript,Tailwind)"
+                  className="w-full border p-2 rounded text-sm"
+                />
+                <input
+                  value={period}
+                  onChange={(e) => updateProject(4, e.target.value)}
+                  placeholder="기간 (예: 2024.01 ~ 2024.06)"
+                  className="w-full border p-2 rounded text-sm"
+                />
+                <input
+                  value={link}
+                  onChange={(e) => updateProject(5, e.target.value)}
+                  placeholder="링크 (예: https://github.com/...)"
+                  className="w-full border p-2 rounded text-sm"
                 />
                 <div className="text-right">
                   <button
@@ -599,9 +749,8 @@ export default function PortfolioPage() {
               </div>
             );
           })}
-
           <button
-            onClick={() => setProjects([...projects, '::'])}
+            onClick={() => setProjects([...projects, '||||||'])}
             className="text-xs text-blue-600"
           >
             + 프로젝트 추가

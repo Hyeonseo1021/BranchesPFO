@@ -51,8 +51,9 @@ export const updateBasicInfo = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const allowed = [
-      "name", "birth", "phone", "address", "introduction", "avatar",
-      "education", "experiences", "certificates", "skills", "tools", "projects"  // ✅ 추가
+      "name", "birth", "phone", "address", "avatar",
+      "introductionKeywords",  // ✅ introduction 대신 introductionKeywords
+      "education", "experiences", "certificates", "skills", "tools", "projects"
     ] as const;
 
     const updateData: Record<string, any> = {};

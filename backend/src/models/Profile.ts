@@ -22,10 +22,55 @@ const ProfileSchema = new mongoose.Schema({
   address: { type: String },
 
   // 자기소개
-  introduction: { type: String, default: '' },
+  introductionKeywords: {
+    positions: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: function(v: string[]) {
+          return v.length >= 3;
+        },
+        message: '희망 직무는 최소 3개 이상 선택해주세요.'
+      }
+    },
+    strengths: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: function(v: string[]) {
+          return v.length >= 3;
+        },
+        message: '강점은 최소 3개 이상 선택해주세요.'
+      }
+    },
+    interests: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: function(v: string[]) {
+          return v.length >= 3;
+        },
+        message: '관심 분야는 최소 3개 이상 선택해주세요.'
+      }
+    },
+    goals: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: function(v: string[]) {
+          return v.length >= 3;
+        },
+        message: '목표는 최소 3개 이상 선택해주세요.'
+      }
+    }
+  },
 
   // 학력
   education: [{
+    schoolType: {  // ✅ 추가
+      type: String,
+      enum: ['고등학교', '대학교', '대학원']
+    },
     school: String,
     major: String,
     degree: String,

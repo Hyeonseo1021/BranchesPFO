@@ -13,22 +13,15 @@ const verifyToken = (req: AuthRequest, res: Response, next: NextFunction): void 
     const token = req.signedCookies[COOKIE_NAME] || req.cookies[COOKIE_NAME];
 
     if (!token) {
-      console.error('❌ 토큰 없음');
       res.status(401).json({ message: '인증되지 않았습니다. 로그인이 필요합니다.' });
       return; 
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string; email: string };
     
-    console.log('✅ 토큰 디코딩 성공:', decoded);
-    
     // ✅ 두 곳 모두에 저장 (호환성)
     req.userId = decoded.id;
     res.locals.jwtData = { id: decoded.id, email: decoded.email };
-    
-    console.log('✅ req.userId 설정:', req.userId);
-    console.log('✅ res.locals.jwtData 설정:', res.locals.jwtData);
-    console.log('======================');
     
     next();
   } catch (error: any) {

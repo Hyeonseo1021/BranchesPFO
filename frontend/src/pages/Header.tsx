@@ -1,17 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn, isLoading, logout } = useAuth();
 
-  useEffect(() => {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    setIsLoggedIn(loggedIn);
-  }, []);
-
-  // ✅ 로그인 필요한 페이지 이동 처리
   const handleProtectedNavigation = (path: string) => {
     if (!isLoggedIn) {
       navigate('/unauthorized');
@@ -21,19 +15,24 @@ export default function Header() {
   };
 
   const handleLogout = async () => {
-    try {
-      await axiosInstance.post('/auth/logout');
-      localStorage.removeItem('isLoggedIn');
-      setIsLoggedIn(false);
-      alert('로그아웃 되었습니다.');
-      navigate('/login');
-    } catch (error) {
-      console.error('로그아웃 실패:', error);
-      localStorage.removeItem('isLoggedIn');
-      setIsLoggedIn(false);
-      navigate('/login');
-    }
+    await logout();
+    alert('로그아웃 되었습니다.');
+    navigate('/login');
   };
+
+  if (isLoading) {
+    return (
+      <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/main')}>
+          <img src="/images/Branches_2.0_Logo.png" alt="로고" className="h-8 w-auto" />
+          <h1 className="text-xl font-bold">Branches PFO</h1>
+        </div>
+        <nav className="space-x-4 text-sm text-gray-400">
+          로딩 중...
+        </nav>
+      </header>
+    );
+  }
 
   return (
     <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center">
@@ -43,7 +42,6 @@ export default function Header() {
       </div>
 
       <nav className="space-x-4 text-sm">
-        {/* ✅ 로그인 필요한 메뉴들 */}
         <a onClick={() => handleProtectedNavigation('/community')} className="hover:underline cursor-pointer">커뮤니티</a>
         <a onClick={() => handleProtectedNavigation('/aichatbot')} className="hover:underline cursor-pointer">AI도우미</a>
         <a onClick={() => handleProtectedNavigation('/aipfopage')} className="hover:underline cursor-pointer">이력서/포트폴리오 생성</a>

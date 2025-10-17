@@ -1,8 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/login'; // login.tsx 파일
-import AIPFOPage from './pages/AIPFOPage'; // home.tsx 파일의 export default 이름에 맞춤
-import Portfolio from './pages/PortfolioWrite_Page';// PortfolioWrite_Page.tsx → 이름 바꾸자
+import { AuthProvider } from './context/AuthContext'; // ✅ 추가
+import Login from './pages/login';
+import AIPFOPage from './pages/AIPFOPage';
+import Profile from './pages/ProfilePage';
 import Register from './pages/Register'; 
 import MainPage from './pages/main';
 import CommunityPage from './pages/community';
@@ -11,6 +12,7 @@ import CmDetail from './pages/cmdetail';
 import AIChatbot from './pages/AIChatbot';
 import Mypage from './pages/Mypage';
 import ResumeResult from './pages/ResumeResult';
+import ResumeEdit from './pages/ResumeEdit';
 import PortfolioResult from './pages/PortfolioResult';
 import JobRecommendPage from './pages/JobRecommendPage'; 
 import PortfolioEdit from './pages/PortfolioEdit'; 
@@ -18,26 +20,29 @@ import Unauthorized from './pages/Unauthorized';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/main" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/portfolio" element={<Portfolio />} />
-        <Route path="/aipfopage" element={<AIPFOPage />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/main" element={<MainPage />} />
-        <Route path="/community" element={<CommunityPage />} />
-        <Route path="/write" element={<WritePage />} />
-        <Route path="/post/:id" element={<CmDetail />} />
-        <Route path="/aichatbot" element={<AIChatbot />} />
-        <Route path="/Mypage" element={<Mypage />} />
-        <Route path="/resume-result/:resumeId" element={<ResumeResult />} />
-        <Route path="/portfolio-result" element={<PortfolioResult />} />
-        <Route path="/jobrecommend" element={<JobRecommendPage />} /> 
-        <Route path="/portfolioedit" element={<PortfolioEdit />} /> 
-        <Route path="/unauthorized" element={<Unauthorized />} />
-      </Routes>
-    </Router>
+    <AuthProvider> 
+      <Router>
+        <Routes>
+          <Route path="/" element={<Navigate to="/main" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/aipfopage" element={<AIPFOPage />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/main" element={<MainPage />} />
+          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/write" element={<WritePage />} />
+          <Route path="/post/:id" element={<CmDetail />} />
+          <Route path="/aichatbot" element={<AIChatbot />} />
+          <Route path="/Mypage" element={<Mypage />} />
+          <Route path="/resume/result/:resumeId" element={<ResumeResult />} />
+          <Route path="/resume/edit/:resumeId" element={<ResumeEdit />} />
+          <Route path="/portfolio-result" element={<PortfolioResult />} />
+          <Route path="/jobrecommend" element={<JobRecommendPage />} /> 
+          <Route path="/portfolioedit" element={<PortfolioEdit />} /> 
+          <Route path="/unauthorized" element={<Unauthorized />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

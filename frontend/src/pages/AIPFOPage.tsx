@@ -5,9 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../pages/Header';
 import Footer from '../pages/Footer';
 import axiosInstance from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function AIPFOPage() {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   const [selection, setSelection] = useState<'portfolio' | 'resume'>('resume');
   const [isLoading, setIsLoading] = useState(false);
   const [prompt, setPrompt] = useState('');
@@ -45,21 +47,30 @@ export default function AIPFOPage() {
       const { profile, user } = profileData;
 
       if (selection === 'resume') {
-        // 이력서 생성
+        // ✅ 이력서 생성
         const response = await axiosInstance.post('/resume/generate', {
           name: profile.name || user.nickname || '',
           email: user.email || '',
           phone: profile.phone || '',
+          birth: profile.birth || '',
           desiredJob: prompt || '백엔드 개발자',
-          address: { address: profile.address || '' },
+          address: profile.address || '',  // ✅ 문자열로 직접 전달
           certificates: profile.certificates || [],
           experiences: profile.experiences || [],
-          introduction: profile.introduction || '',
+          education: profile.education || [],
+          skills: profile.skills || [],
+          tools: profile.tools || [],
+          projects: profile.projects || [],
+          introductionKeywords: profile.introductionKeywords || {  // ✅ introduction 대신 introductionKeywords
+            positions: [],
+            strengths: [],
+            interests: [],
+            goals: []
+          },
           title: prompt ? `${prompt} 이력서` : '내 이력서'
         });
-
         console.log('✅ 이력서 생성 성공:', response.data);
-        navigate(`/resume-result/${response.data.resumeId}`);
+        navigate(`/resume/result/${response.data.resumeId}`);
 
       } else {
         // 포트폴리오 생성 (API 엔드포인트 확인 필요)
@@ -68,7 +79,12 @@ export default function AIPFOPage() {
           email: user.email || '',
           phone: profile.phone || '',
           title: prompt || '내 포트폴리오',
-          introduction: profile.introduction || '',
+          introductionKeywords: profile.introductionKeywords || {  // ✅ introduction 대신 introductionKeywords
+            positions: [],
+            strengths: [],
+            interests: [],
+            goals: []
+          },
           projects: profile.projects || [],
           skills: profile.skills || [],
           tools: profile.tools || []
@@ -110,7 +126,7 @@ export default function AIPFOPage() {
           }}
         >
           <h2 className="text-3xl md:text-4xl font-bold text-white drop-shadow-[2px_2px_2px_rgba(0,0,0,0.5)] mb-4 animate-fade-in-down">
-            Powered by AI · GPT 기반 이력서/포트폴리오
+            Powered by AI 기반 이력서/포트폴리오
           </h2>
           <p className="text-white text-lg drop-shadow-[1px_1px_1px_rgba(0,0,0,0.4)] animate-fade-in-down" style={{ animationDelay: '0.3s' }}>
             사용자의 경력, 자격증 다양한 정보를 IT기반으로 포트폴리오/이력서를 생성하는 AI브랜치
@@ -168,7 +184,6 @@ export default function AIPFOPage() {
             <div 
               className="w-40 h-48 text-center cursor-pointer hover:shadow-xl transition"
               onClick={() => {
-                const isLoggedIn = !!localStorage.getItem("isLoggedIn");
                 if (!isLoggedIn) {
                   alert("로그인이 필요합니다.");
                   navigate('/login');
@@ -188,7 +203,6 @@ export default function AIPFOPage() {
             {/* ✅ 지금 직접 입력하기 */}
             <div
               onClick={() => {
-                const isLoggedIn = !!localStorage.getItem("isLoggedIn");
                 if (!isLoggedIn) {
                   alert("로그인이 필요합니다.");
                   navigate('/login');

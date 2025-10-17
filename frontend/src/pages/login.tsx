@@ -2,14 +2,18 @@
 
 import React, { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Header from '../pages/Header';
 import Footer from '../pages/Footer';
 import axiosInstance from '../api/axios';
 
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const { checkAuth } = useAuth(); // ✅ Context 사용
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -18,14 +22,11 @@ export default function Login() {
       const response = await axiosInstance.post('/auth/login', {
         email,
         password,
+        rememberMe,
       });
 
-      // ✅ 쿠키 기반 - localStorage 저장 불필요
-      // 백엔드가 Set-Cookie로 토큰 전송, withCredentials로 자동 저장됨
-      console.log('✅ 로그인 성공:', response.data);
-
       if (response.status === 200) {
-        localStorage.setItem('isLoggedIn', 'true');
+        await checkAuth(); // ✅ 전역 상태 업데이트
         alert(`${response.data.message} 메인 페이지로 이동합니다.`);
         navigate('/main');
       }
@@ -84,7 +85,18 @@ export default function Login() {
                 className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
               />
             </div>
-
+            <div className="mb-4 flex items-center">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="rememberMe" className="text-sm text-gray-700">
+                로그인 상태 유지
+              </label>
+            </div>
             <div className="flex items-center justify-center">
               <button
                 type="submit"

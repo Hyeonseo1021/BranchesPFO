@@ -55,7 +55,7 @@ export const userSignUp = async (req: Request, res: Response): Promise<void> => 
 
 export const userLogin = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
     if (!email || !password) {
       res.status(400).json({ message: "이메일과 비밀번호를 입력하세요." });
       return;
@@ -74,18 +74,22 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = createToken(user._id.toString(), user.email, "7d");
-    const expires = new Date();
-    expires.setDate(expires.getDate() + 7);
-
-    // ✅ 개발/프로덕션 환경에 맞게 쿠키 설정
-    res.cookie(COOKIE_NAME, token, {
+    const cookieOptions: any = {
       path: "/",
-      expires,
       httpOnly: true,
       signed: true,
-      sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",  // ✅ 개발: none
-      secure: process.env.NODE_ENV === "production" || true,  // ✅ none일 때는 항상 true
-    });
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
+      secure: process.env.NODE_ENV === "production" || true,
+    };
+
+    // ✅ 로그인 유지 체크하면 7일, 안하면 세션 쿠키
+    if (rememberMe) {
+      const expires = new Date();
+      expires.setDate(expires.getDate() + 7);
+      cookieOptions.expires = expires;
+    }
+
+    res.cookie(COOKIE_NAME, token, cookieOptions);
 
     res.status(200).json({
       message: "로그인 성공",

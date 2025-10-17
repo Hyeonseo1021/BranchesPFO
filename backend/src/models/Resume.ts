@@ -17,10 +17,31 @@ const ResumeSchema = new mongoose.Schema({
   address: { type: String, default: '' },
   email: {type:String, default: ''},
   phone: { type: String, default: '' },
-  mobile: { type: String, default: '' },
+  introductionKeywords: {
+    positions: {
+      type: [String],
+      default: []
+    },
+    strengths: {
+      type: [String],
+      default: []
+    },
+    interests: {
+      type: [String],
+      default: []
+    },
+    goals: {
+      type: [String],
+      default: []
+    }
+  },
 
   // ✅ 학력 (Profile과 동일하게)
   education: [{
+    schoolType: {  // ✅ 추가
+      type: String,
+      enum: ['고등학교', '대학교', '대학원']
+    },
     school: String,
     major: String,
     degree: String,
