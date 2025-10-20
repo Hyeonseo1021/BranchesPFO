@@ -8,7 +8,7 @@ import resumeRoutes from "./routes/ResumeRoutes";
 import communityRoutes from "./routes/CommunityRoutes"; // 경로에 공백이 없는지 확인
 import chatRoutes from "./routes/ChatRoutes"; // 추가
 import profileRoutes from "./routes/ProfileRoutes";
-
+import portfolioRoutes from './routes/PortfolioRoutes';
 const app = express();
 
 app.use(cors({
@@ -25,6 +25,7 @@ app.use("/api/resume", resumeRoutes);
 app.use("/api/community", communityRoutes);
 app.use("/api/chat", chatRoutes); 
 app.use("/api/profile", profileRoutes);
+app.use('/api/portfolio', portfolioRoutes);
 
 const connectDB = async () => {
   try {

@@ -79,19 +79,30 @@ export default function AIPFOPage() {
           email: user.email || '',
           phone: profile.phone || '',
           title: prompt || '내 포트폴리오',
-          introductionKeywords: profile.introductionKeywords || {  // ✅ introduction 대신 introductionKeywords
+          
+          // ✅ 키워드
+          introductionKeywords: profile.introductionKeywords || {
             positions: [],
             strengths: [],
             interests: [],
             goals: []
           },
+          
+          // ✅ 프로젝트 (포트폴리오의 핵심!)
           projects: profile.projects || [],
+          
+          // ✅ 기술 & 툴
           skills: profile.skills || [],
-          tools: profile.tools || []
+          tools: profile.tools || [],
+          
+          // ✅ 선택적 정보 (있으면 더 풍부한 포트폴리오)
+          experiences: profile.experiences || [],
+          education: profile.education || [],
+          certificates: profile.certificates || []
         });
 
         console.log('✅ 포트폴리오 생성 성공:', response.data);
-        navigate(`/portfolio-result/${response.data.portfolioId}`);
+        navigate(`/portfolio/result/${response.data.portfolioId}`);
       }
       
     } catch (error: any) {

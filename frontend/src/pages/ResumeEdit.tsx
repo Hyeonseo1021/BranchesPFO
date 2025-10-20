@@ -113,7 +113,7 @@ export default function ResumeEdit() {
     try {
       await axiosInstance.put(`/resume/${resumeId}`, resumeData);
       alert('수정사항이 저장되었습니다! 🎉');
-      navigate(`/resume/${resumeId}`);
+      navigate(`/resume/result/${resumeId}`);
     } catch (error) {
       console.error('이력서 수정 실패:', error);
       alert('수정사항 저장에 실패했습니다.');

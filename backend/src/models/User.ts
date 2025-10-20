@@ -33,6 +33,10 @@ const UserSchema = new mongoose.Schema({
       ref: 'Resume'
     }
   ],
+  portfolios: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Portfolio'
+  }]
 }, {
   timestamps: { createdAt: true, updatedAt: false } // 생성시간만 기록
 });

@@ -93,3 +93,29 @@ export async function generateTextFromPrompt(prompt: string): Promise<string> {
     throw error;
   }
 }
+
+export const generatePortfolioWithClaude = async (prompt: string): Promise<string> => {
+  try {
+    const message = await anthropic.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 16000,
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ]
+    });
+
+    const content = message.content[0];
+    if (content.type === 'text') {
+      return content.text;
+    }
+
+    throw new Error('Claude로부터 유효한 응답을 받지 못했습니다.');
+
+  } catch (error: any) {
+    console.error('❌ Claude API 오류:', error);
+    throw new Error(`포트폴리오 생성 실패: ${error.message}`);
+  }
+};

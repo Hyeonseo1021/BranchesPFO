@@ -116,7 +116,6 @@ export default function Mypage() {
     <div className="min-h-screen bg-white">
       <Header />
       <div className="h-8 bg-[#E6FCB9]" />
-
       <div className="max-w-7xl mx-auto flex p-10 space-x-6 text-sm text-gray-800">
         {/* 사이드바 */}
         <aside className="w-60 border-r pr-6">
@@ -128,8 +127,22 @@ export default function Mypage() {
 
           <h3 className="font-bold text-base mt-6 mb-4">PFO 결과물 보기</h3>
           <ul className="space-y-2">
-            <li><a href="#" className="hover:underline">📄 이력서 보기</a></li>
-            <li><a href="#" className="hover:underline">📁 포트폴리오 보기</a></li>
+            <li>
+              <button 
+                onClick={() => navigate('/mypage/resumes')}
+                className="hover:underline text-left w-full"
+              >
+                📄 이력서 보기
+              </button>
+            </li>
+            <li>
+              <button 
+                onClick={() => navigate('/mypage/portfolios')}
+                className="hover:underline text-left w-full"
+              >
+                📁 포트폴리오 보기
+              </button>
+            </li>
           </ul>
         </aside>
 
