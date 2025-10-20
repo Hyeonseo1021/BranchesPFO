@@ -12,7 +12,8 @@ import { Types } from 'mongoose';
 /** 모든 게시글 조회 */
 export const getAllPosts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const posts = await Post.find().populate('author', 'name id').sort({ createdAt: -1 });
+    // ✅ 'name'을 'nickname'으로 변경
+    const posts = await Post.find().populate('author', 'nickname id').sort({ createdAt: -1 });
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ message: '서버 오류' });
@@ -26,7 +27,7 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
       req.params.postId,
       { $inc: { views: 1 } },
       { new: true }
-    ).populate('author', 'name id');
+    ).populate('author', 'nickname id'); // ✅ nickname으로 변경
 
     if (!post) {
       res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
@@ -42,7 +43,7 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
 /** 새 게시글 생성 */
 export const createPost = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    if (!req.user?.id) {
+    if (!req.userId) {
       res.status(401).json({ message: '로그인 후 이용하세요.' });
       return;
     }
@@ -56,7 +57,7 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
     const newPost = new Post({
       title,
       content,
-      author: req.user.id,
+      author: req.userId,
     });
 
     await newPost.save();
@@ -71,7 +72,7 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
 export const updatePost = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const updatedPost = await Post.findOneAndUpdate(
-      { _id: req.params.postId, author: req.user?.id },
+      { _id: req.params.postId, author: req.userId },
       { title: req.body.title, content: req.body.content },
       { new: true }
     );
@@ -90,7 +91,11 @@ export const updatePost = async (req: AuthRequest, res: Response): Promise<void>
 /** 게시글 삭제 */
 export const deletePost = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const deletedPost = await Post.findOneAndDelete({ _id: req.params.postId, author: req.user?.id });
+    const deletedPost = await Post.findOneAndDelete({ 
+      _id: req.params.postId, 
+      author: req.userId
+    });
+    
     if (!deletedPost) {
       res.status(404).json({ message: '게시글을 찾을 수 없거나 삭제할 권한이 없습니다.' });
       return;
@@ -109,7 +114,7 @@ export const deletePost = async (req: AuthRequest, res: Response): Promise<void>
 export const getComments = async (req: Request, res: Response): Promise<void> => {
   try {
     const comments = await Comment.find({ postId: req.params.postId })
-      .populate('author', 'name id')
+      .populate('author', 'nickname id') // ✅ nickname으로 변경
       .sort({ createdAt: 1 });
     res.status(200).json(comments);
   } catch (error) {
@@ -120,7 +125,7 @@ export const getComments = async (req: Request, res: Response): Promise<void> =>
 /** 댓글 생성 */
 export const createComment = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    if (!req.user?.id) {
+    if (!req.userId) {
       res.status(401).json({ message: '로그인 후 이용하세요.' });
       return;
     }
@@ -128,11 +133,11 @@ export const createComment = async (req: AuthRequest, res: Response): Promise<vo
     const newComment = new Comment({
       content: req.body.content,
       postId: req.params.postId,
-      author: req.user.id,
+      author: req.userId,
     });
 
     await newComment.save();
-    const populatedComment = await newComment.populate('author', 'name id');
+    const populatedComment = await newComment.populate('author', 'nickname id'); // ✅ nickname으로 변경
     res.status(201).json(populatedComment);
   } catch (error) {
     res.status(500).json({ message: '서버 오류' });
@@ -143,7 +148,7 @@ export const createComment = async (req: AuthRequest, res: Response): Promise<vo
 export const updateComment = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const updatedComment = await Comment.findOneAndUpdate(
-      { _id: req.params.commentId, author: req.user?.id },
+      { _id: req.params.commentId, author: req.userId },
       { content: req.body.content },
       { new: true }
     );
@@ -162,7 +167,11 @@ export const updateComment = async (req: AuthRequest, res: Response): Promise<vo
 /** 댓글 삭제 */
 export const deleteComment = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const deletedComment = await Comment.findOneAndDelete({ _id: req.params.commentId, author: req.user?.id });
+    const deletedComment = await Comment.findOneAndDelete({ 
+      _id: req.params.commentId, 
+      author: req.userId
+    });
+    
     if (!deletedComment) {
       res.status(404).json({ message: '댓글을 찾을 수 없거나 삭제할 권한이 없습니다.' });
       return;
@@ -185,7 +194,7 @@ export const toggleLike = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    const userObjectId = new Types.ObjectId(req.user?.id);
+    const userObjectId = new Types.ObjectId(req.userId);
     const likeIndex = post.likes.findIndex(id => id.equals(userObjectId));
 
     if (likeIndex > -1) {
@@ -204,7 +213,7 @@ export const toggleLike = async (req: AuthRequest, res: Response): Promise<void>
 /** 북마크 토글 */
 export const toggleBookmark = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = await User.findById(req.user?.id);
+    const user = await User.findById(req.userId);
     if (!user) {
       res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
       return;

@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import Header from '../pages/Header';
 import Footer from '../pages/Footer';
 import { useNavigate } from 'react-router-dom';
-import axios from "axios";
+import axiosInstance from '../api/axios';
 
 interface Post {
   _id: string;
   title: string;
   content: string;
-  author: { name: string; id: string };
+  author: { nickname: string; id: string };
   createdAt: string;
 }
 
@@ -17,36 +17,51 @@ export default function CommunityPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 게시글 목록 불러오기
   useEffect(() => {
-  const fetchPosts = async () => {
+    const fetchPosts = async () => {
+      try {
+        console.log('========== 게시글 목록 조회 ==========');
+        
+        // ✅ axiosInstance 사용 (withCredentials 자동 적용)
+        const res = await axiosInstance.get('/community/posts');
+        
+        console.log('✅ 게시글 응답:', res.data);
+        
+        // ✅ res.data로 접근
+        setPosts(Array.isArray(res.data) ? res.data : []);
+      } catch (err: any) {
+        console.error('❌ 게시글 불러오기 실패:', err);
+        console.error('에러 상세:', err.response?.data);
+        
+        // 에러가 발생해도 빈 배열로 설정 (UI는 정상 표시)
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchPosts();
+  }, []);
+
+  // 📌 글쓰기 버튼 클릭 (로그인 확인)
+  const handleWriteClick = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/community/posts`, {
-        withCredentials: true,
-      });
-      console.log("게시글 응답:", res.data);
-      setPosts(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("게시글 불러오기 실패:", err);
-      setPosts([]);
-    } finally {
-      setLoading(false);
+      console.log('========== 로그인 상태 확인 ==========');
+      
+      await axiosInstance.get('/auth/me');
+      
+      console.log('✅ 로그인 확인 성공');
+      
+      // 로그인 되어 있으면 글쓰기 페이지로 이동
+      navigate('/write');
+    } catch (error: any) {
+      console.error('❌ 로그인 상태 확인 실패:', error);
+      console.error('에러 상세:', error.response?.data);
+      
+      alert('로그인이 필요합니다.');
+      navigate('/login');
     }
   };
-  fetchPosts();
-}, []);
-
-
-const handleWirteClick = async () => {
-  try{
-    await axios.get(`${process.env.REACT_APP_API_URL}/users/verify`, { withCredentials: true });
-    navigate('/write');
-  } catch (error) {
-    console.error("로그인 상태 확인 실패 : ", error);
-    alert("로그인이 필요합니다.");
-    navigate('/login');
-  }
-};
 
   if (loading) return <p className="text-center mt-20">불러오는 중...</p>;
 
@@ -83,7 +98,7 @@ const handleWirteClick = async () => {
                 >
                   <td className="py-2 px-3">{index + 1}</td>
                   <td className="py-2 px-3">{post.title}</td>
-                  <td className="py-2 px-3">{post.author?.name || "익명"}</td>
+                  <td className="py-2 px-3">{post.author?.nickname || "익명"}</td>
                   <td className="py-2 px-3">
                     {new Date(post.createdAt).toLocaleDateString()}
                   </td>
@@ -106,17 +121,9 @@ const handleWirteClick = async () => {
 
           <button
             className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-            onClick={() => {
-              const isLoggedIn = !!localStorage.getItem('token');
-              if (!isLoggedIn) {
-                alert('로그인이 필요합니다.');
-                navigate('/login');
-              } else {
-                navigate('/write');
-              }
-            }}
+            onClick={handleWriteClick}
           >
-            글쓰기
+          글쓰기
           </button>
         </div>
       </main>

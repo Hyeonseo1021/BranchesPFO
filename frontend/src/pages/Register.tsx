@@ -6,7 +6,6 @@ import axios from 'axios';
 
 export default function Register() {
   const [nickname, setNickname] = useState('');
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,13 +18,17 @@ export default function Register() {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
- try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, {
-        id: username,     // 백엔드 요구사항: 아이디
-        name: nickname,   // 백엔드 요구사항: 이름(닉네임)
-        email: email,     // ✅ 프론트에서 직접 입력한 이메일
-        password,         // 비밀번호
-      });
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/auth/register`, 
+        {
+          nickname,   
+          email,     
+          password,        
+        },
+        { withCredentials: true}
+      );
 
       console.log("✅ 회원가입 성공:", response.data);
       alert("회원가입 성공!");
@@ -73,21 +76,9 @@ export default function Register() {
                 className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
               />
             </div>
-
-            {/* 아이디 */}
+            {/* 이메일 ✅ 추가 */}
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">아이디</label>
-              <input
-                type="text"
-                placeholder="아이디"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700"
-              />
-            </div>
-   {/* 이메일 ✅ 추가 */}
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">이메일(임시 로그인 확인용)</label>
+              <label className="block text-gray-700 text-sm font-bold mb-2">이메일</label>
               <input
                 type="email"
                 placeholder="이메일"

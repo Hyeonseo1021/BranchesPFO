@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import Header from './Header';
 import Footer from './Footer';
+import axiosInstance from '../api/axios';
 import { useNavigate, useParams } from 'react-router-dom';
 
 interface Post {
   _id: string;
   title: string;
   content: string;
-  author?: { name: string; id: string };
+  author?: { nickname: string; id: string };
   createdAt: string;
 }
 
 interface Comment {
   _id: string;
-  author?: { name: string; id: string };
+  author?: { nickname: string; id: string };
   content: string;
   createdAt: string;
 }
@@ -30,12 +31,8 @@ export default function CmDetail() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/posts/${id}`, {
-          credentials: 'include', // ✅ 쿠키 인증 포함
-        });
-        if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
-        const data = await res.json();
-        setPost(data);
+        const res = await axiosInstance.get(`community/posts/${id}`);
+        setPost(res.data);
       } catch (err) {
         console.error('게시글 불러오기 실패:', err);
       } finally {
@@ -49,12 +46,8 @@ export default function CmDetail() {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/community/posts/${id}/comments`, {
-          credentials: 'include', // ✅ 쿠키 인증 포함
-        });
-        if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
-        const data = await res.json();
-        setComments(Array.isArray(data) ? data : []); // ✅ 안전하게 배열만 저장
+        const res = await axiosInstance.get(`/community/posts/${id}/comments`);
+        setComments(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error('댓글 불러오기 실패:', err);
       }
@@ -64,29 +57,50 @@ export default function CmDetail() {
 
   // 📌 댓글 작성 (쿠키 인증 포함)
   const handleAddComment = async () => {
-    if (newComment.trim() === '') return;
+    if (newComment.trim() === '') {
+      alert('댓글 내용을 입력해주세요.');
+      return;
+    }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/community/posts/${id}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newComment }),
-        credentials: 'include', // ✅ 쿠키 인증 포함
+      console.log('========== 댓글 작성 ==========');
+      console.log('게시글 ID:', id);
+      console.log('댓글 내용:', newComment);
+      
+      // ✅ axiosInstance 사용 + body에 데이터 전달
+      const res = await axiosInstance.post(`/community/posts/${id}/comments`, {
+        content: newComment  // ✅ 댓글 내용 전달
       });
-
-      if (res.status === 401) {
+      
+      console.log('✅ 댓글 작성 성공:', res.data);
+      
+      // ✅ axios는 res.data로 접근
+      setComments((prev) => [...prev, res.data]); // 새 댓글 추가
+      setNewComment(''); // 입력창 초기화
+      
+      alert('댓글이 작성되었습니다.');
+    } catch (err: any) {
+      console.error('❌ 댓글 작성 실패:', err);
+      console.error('에러 상세:', err.response?.data);
+      
+      // ✅ 401 에러는 catch에서 처리
+      if (err.response?.status === 401) {
         alert('로그인이 필요합니다.');
         navigate('/login');
         return;
       }
-
-      if (!res.ok) throw new Error(`댓글 작성 실패: ${res.status}`);
-
-      const data = await res.json();
-      setComments((prev) => [...prev, data]); // 새 댓글 추가
-      setNewComment('');
-    } catch (err) {
-      console.error('댓글 작성 실패:', err);
+      
+      if (err.response?.status === 403) {
+        alert('댓글 작성 권한이 없습니다.');
+        return;
+      }
+      
+      if (err.response?.status === 404) {
+        alert('게시글을 찾을 수 없습니다.');
+        return;
+      }
+      
+      alert(err.response?.data?.message || '댓글 작성에 실패했습니다.');
     }
   };
 
@@ -103,7 +117,7 @@ export default function CmDetail() {
 
         {/* 작성자 + 날짜 */}
         <div className="flex justify-between text-sm text-gray-500 mb-6">
-          <span>글쓴이: {post.author?.name || '익명'}</span>
+          <span>글쓴이: {post.author?.nickname || '익명'}</span>
           <span>작성일자: {new Date(post.createdAt).toLocaleDateString()}</span>
         </div>
 
@@ -121,7 +135,7 @@ export default function CmDetail() {
                 <li key={comment._id} className="border-b pb-2">
                   <p className="text-sm text-gray-700">{comment.content}</p>
                   <p className="text-xs text-gray-400">
-                    작성자: {comment.author?.name || '익명'} |{' '}
+                    작성자: {comment.author?.nickname || '익명'} |{' '}
                     {new Date(comment.createdAt).toLocaleDateString()}
                   </p>
                 </li>

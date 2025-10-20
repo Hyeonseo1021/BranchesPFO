@@ -1,13 +1,32 @@
-
+// src/routes/ResumeRoutes.ts
 import express, { Router, RequestHandler } from "express";
-import { generateResume, updateResume } from "../controllers/ResumeController";
+import { 
+  generateResume,
+  getResume,
+  getMyResumes,
+  updateResume,
+  deleteResume
+} from "../controllers/ResumeController";
 import verifyToken from '../middleware/verifyToken';
-const router = express.Router();
 
-// 이력서 생성
-router.post("/generate", verifyToken, generateResume as RequestHandler);
+const ResumeRoutes = express.Router();
 
-// 이력서 수정
-router.put("/update/:resumeId", verifyToken, updateResume as RequestHandler);
+// ✅ 모든 라우트에 인증 미들웨어 적용
+ResumeRoutes.use(verifyToken);
 
-export default router;
+// ✅ 이력서 생성
+ResumeRoutes.post("/generate", generateResume);
+
+// ✅ 내 이력서 목록 조회 (먼저 선언해야 /:resumeId와 충돌 방지)
+ResumeRoutes.get("/my-resumes", getMyResumes);
+
+// ✅ 특정 이력서 조회
+ResumeRoutes.get("/:resumeId", getResume);
+
+// ✅ 이력서 수정
+ResumeRoutes.put("/:resumeId", updateResume);
+
+// ✅ 이력서 삭제
+ResumeRoutes.delete("/:resumeId", deleteResume);
+
+export default ResumeRoutes;

@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="bg-green-700 text-white py-6 mt-10">
       <div className="text-center mb-2 font-semibold text-lg">Branches PFO</div>
       <div className="text-center text-sm mb-2">
-        곽민성 · 허경준 · 양찬승 · 황은빈 · 김현서
+        By. Branches 2.0
       </div>
       <div className="text-center text-sm">
         <a

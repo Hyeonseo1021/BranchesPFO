@@ -47,7 +47,7 @@ export default function MainPage() {
      Branches PFO는 사용자의 경력과 자격 정보를 기반으로 IT기반 이력서와 포트폴리오를 완성합니다.
     </p>
     <button
-      onClick={() => navigate('/home')}
+      onClick={() => navigate('/aipfopage')}
       className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition-all duration-300 hover:scale-105 animate-fade-in-down"
       style={{ animationDelay: '0.4s', animationFillMode: 'both' }}
     >

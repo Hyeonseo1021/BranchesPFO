@@ -2,116 +2,339 @@
 import { Request, Response } from "express";
 import { generateResumeFromPrompt } from "../utils/Client";
 import User from "../models/User";
+import Resume from "../models/Resume";
 
-// 이력서 생성 기능
+// Create A Resume
 export const generateResume = async (req: Request, res: Response): Promise<void> => {
   try {
-    // 1. 인증된 사용자 확인
     if (!res.locals.jwtData?.id) {
       res.status(401).json({ message: "인증되지 않은 사용자입니다." });
       return;
     }
-
     const user = await User.findById(res.locals.jwtData?.id);
     if (!user) {
       res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
       return;
     }
 
-    // 2. 요청 본문 데이터 추출
-    const { name, email, phone, desiredJob, address, certificates, experiences, title } = req.body;
+    const { 
+      name, email, phone, desiredJob, address, certificates, experiences, 
+      introductionKeywords,  // ✅ introduction 대신 introductionKeywords
+      skills, tools, projects, education, birth, title 
+    } = req.body;
 
-    // 3. AI 프롬프트 생성
-    const prompt = `
-      당신은 대한민국 HR 전문가이자 이력서 작성 코치입니다.
-      아래 사용자 정보를 기반으로 "표준 국문 이력서"를 작성하세요.
+    console.log('📥 받은 education:', education);
+    console.log('📥 받은 introductionKeywords:', introductionKeywords);
+    console.log('📥 받은 address:', address);
 
-      ⚙️ 출력 형식 (JSON)
-      {
-        "personal": { "name": "", "birth": "", "phone": "", "email": "", "address": "" },
-        "education": [ { "school": "", "major": "", "period": "", "status": "" } ],
-        "experience": [ { "company": "", "position": "", "period": "", "description": "" } ],
-        "certificates": [ { "name": "", "issuedBy": "", "date": "" } ],
-        "skills": [ "" ],
-        "projects": [ { "name": "", "role": "", "techStack": "", "description": "" } ],
-        "introduction": "자기소개 및 포부 (500자 이내)"
+    // ✅ address 처리 (객체일 경우 문자열로 변환)
+    const addressStr = typeof address === 'object' ? (address?.address || '') : (address || '');
+
+    // ✅ 키워드가 있는지 확인
+    const hasKeywords = introductionKeywords && 
+      (introductionKeywords.positions?.length > 0 || 
+       introductionKeywords.strengths?.length > 0 || 
+       introductionKeywords.interests?.length > 0 || 
+       introductionKeywords.goals?.length > 0);
+
+    // ✅ 키워드 기반 프롬프트
+    const prompt = hasKeywords 
+      ? `당신은 대한민국 HR 전문가이자 이력서 작성 코치입니다.
+
+    <사용자_정보>
+    이름: ${name}
+    희망직무: ${desiredJob || "미입력"}
+
+    <선택한_키워드>
+    - 희망 직무: ${introductionKeywords.positions?.join(', ') || '미입력'}
+    - 주요 강점: ${introductionKeywords.strengths?.join(', ') || '없음'}
+    - 관심 분야: ${introductionKeywords.interests?.join(', ') || '없음'}
+    - 목표/지향점: ${introductionKeywords.goals?.join(', ') || '없음'}
+    </선택한_키워드>
+
+    경력: ${experiences?.map((e: any) => `${e.company} ${e.position}`).join(", ") || "신입"}
+    기술: ${skills?.join(", ") || "없음"}
+    프로젝트: ${projects?.map((p: any) => p.title).join(", ") || "없음"}
+    </사용자_정보>
+
+    위 정보를 바탕으로 자기소개서를 4개 섹션으로 작성하세요.
+    선택한 키워드를 자연스럽게 녹여내되, 키워드를 그대로 나열하지 말고 스토리텔링 형식으로 작성하세요.
+
+    다음 JSON 형식으로만 응답하세요:
+
+    {
+      "coverLetter": {
+        "strengths": "주요 경력과 업무 강점 (500자)",
+        "growth": "성장 과정 (500자)",
+        "personality": "성격의 장단점 (500자)",
+        "motivation": "지원동기 및 입사포부 (500자)"
       }
-
-      ⚙️ 작성 조건
-      - 반드시 위 JSON 구조에 맞게만 출력하세요 (그 외 문장 금지)
-      - 불필요한 수식어, 존칭, 이모티콘은 사용하지 마세요
-      - 간결하고 구체적으로 작성하세요
-      - 모든 내용은 한국어로 작성하세요
-
-      사용자 정보:
-      이름: ${name || "미입력"}
-      이메일: ${email || "미입력"}
-      전화번호: ${phone || "미입력"}
-      희망직무: ${desiredJob || "미입력"}
-      주소: ${address?.address || "미입력"}
-      자격증: ${certificates?.map((c: any) => c.name).join(", ") || "없음"}
-      경력: ${experiences?.map((e: any) => `${e.company} (${e.position})`).join(", ") || "없음"}
-      `;
-
-    // 4. AI로 이력서 생성
-    const resume = await generateResumeFromPrompt(prompt);
-
-    // 5. 사용자 이력서 배열에 추가
-    if (!user.resumes) {
-      user.resumes = [];
     }
 
-    user.resumes.push({
+    각 섹션은 구체적이고 설득력 있게 한국어로 작성하세요.`
+          : `당신은 대한민국 HR 전문가이자 이력서 작성 코치입니다.
+
+    <사용자_정보>
+    이름: ${name}
+    희망직무: ${desiredJob || "미입력"}
+    경력: ${experiences?.map((e: any) => `${e.company} ${e.position}`).join(", ") || "신입"}
+    기술: ${skills?.join(", ") || "없음"}
+    프로젝트: ${projects?.map((p: any) => p.title).join(", ") || "없음"}
+    </사용자_정보>
+
+    위 정보를 바탕으로 자기소개서를 4개 섹션으로 작성하세요.
+    다음 JSON 형식으로만 응답하세요:
+
+    {
+      "coverLetter": {
+        "strengths": "주요 경력과 업무 강점 (500자)",
+        "growth": "성장 과정 (500자)",
+        "personality": "성격의 장단점 (500자)",
+        "motivation": "지원동기 및 입사포부 (500자)"
+      }
+    }
+
+    각 섹션은 구체적이고 설득력 있게 한국어로 작성하세요.`;
+
+    console.log('🤖 AI 호출 시작...');
+    const aiResult = await generateResumeFromPrompt(prompt);
+    console.log('🤖 AI 응답:', JSON.stringify(aiResult, null, 2));
+
+    // ✅ AI는 coverLetter만, 나머지는 Profile 데이터 그대로
+    const resumeDoc = await Resume.create({
+      user: user._id,
       title: title || "AI 생성 이력서",
-      content: resume,
-      createdAt: new Date(),
+      
+      // ✅ 기본 정보 - req.body에서 직접
+      name: name || "",
+      email: email || "",
+      phone: phone || "",
+      birth: birth || "",
+      address: addressStr,  // ✅ 문자열로 변환된 주소
+      
+      // ✅ 키워드 저장
+      introductionKeywords: introductionKeywords || {
+        positions: [],
+        strengths: [],
+        interests: [],
+        goals: []
+      },
+      
+      // ✅ Profile 데이터 그대로 복사 (AI 의존 안 함)
+      education: education || [],
+      experiences: experiences || [],
+      certificates: certificates || [],
+      skills: skills || [],
+      tools: tools || [],
+      projects: projects || [],
+      
+      // ✅ AI가 생성한 자기소개서만 사용
+      coverLetter: {
+        strengths: aiResult.coverLetter?.strengths || '',
+        growth: aiResult.coverLetter?.growth || '',
+        personality: aiResult.coverLetter?.personality || '',
+        motivation: aiResult.coverLetter?.motivation || ''
+      }
     });
 
-    // 6. 저장
-    await user.save();
+    await User.findByIdAndUpdate(user._id, { $push: { resumes: resumeDoc._id } });
 
-    // 7. 성공 응답
+    res.status(200).json({
+      message: "이력서 생성 및 저장 완료",
+      resumeId: resumeDoc._id,
+      resume: resumeDoc,
+    });
+  } catch (error) {
+    console.error("❌ Resume generation error:", error);
+    res.status(500).json({
+      error: "이력서 생성 실패",
+      details: error instanceof Error ? error.message : "알 수 없는 오류",
+    });
+  }
+};
+
+// ✅ 특정 이력서 조회
+export const getResume = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { resumeId } = req.params;
+    
+    if (!res.locals.jwtData?.id) {
+      res.status(401).json({ message: "인증되지 않은 사용자입니다." });
+      return;
+    }
+
+    const resume = await Resume.findById(resumeId).populate('user', 'name email');
+    
+    if (!resume) {
+      res.status(404).json({ message: "이력서를 찾을 수 없습니다." });
+      return;
+    }
+    
+    // 본인 확인
+    if (resume.user._id.toString() !== res.locals.jwtData?.id) {
+      res.status(403).json({ message: "권한이 없습니다." });
+      return;
+    }
+    
     res.status(200).json({ 
-      message: "이력서 생성 및 저장 완료", 
+      message: "이력서 조회 성공",
       resume 
     });
-
   } catch (error) {
-    console.error("Resume generation error:", error);
+    console.error("Resume fetch error:", error);
     res.status(500).json({ 
-      error: "이력서 생성 실패",
+      message: "서버 오류",
       details: error instanceof Error ? error.message : "알 수 없는 오류"
     });
   }
 };
 
-// 이력서 수정 기능
-export const updateResume = async (req: Request, res: Response) => {
-  const { userId, updatedContent, title } = req.body;
-  const { resumeId } = req.params;
-
+// ✅ 내 이력서 목록 조회
+export const getMyResumes = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await User.findOne({ id: userId });
-    if (!user || !user.resumes) {
-      return res.status(404).json({ message: "사용자 또는 이력서 없음" });
+    if (!res.locals.jwtData?.id) {
+      res.status(401).json({ message: "인증되지 않은 사용자입니다." });
+      return;
     }
 
-    const resume = user.resumes.find(
-      (r) => r._id?.toString() === resumeId
-    );
+    const userId = res.locals.jwtData?.id;
+    const resumes = await Resume.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .select('title createdAt updatedAt content');
+    
+    res.status(200).json({ 
+      message: "이력서 목록 조회 성공",
+      count: resumes.length,
+      resumes 
+    });
+  } catch (error) {
+    console.error("Resume list fetch error:", error);
+    res.status(500).json({ 
+      message: "서버 오류",
+      details: error instanceof Error ? error.message : "알 수 없는 오류"
+    });
+  }
+};
 
+// ✅ 이력서 수정
+export const updateResume = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { resumeId } = req.params;
+    
+    if (!res.locals.jwtData?.id) {
+      res.status(401).json({ message: "인증되지 않은 사용자입니다." });
+      return;
+    }
+
+    const resume = await Resume.findById(resumeId);
+    
     if (!resume) {
-      return res.status(404).json({ message: "해당 이력서를 찾을 수 없습니다." });
+      res.status(404).json({ message: "이력서를 찾을 수 없습니다." });
+      return;
+    }
+    
+    // 본인 확인
+    if (resume.user.toString() !== res.locals.jwtData?.id) {
+      res.status(403).json({ message: "권한이 없습니다." });
+      return;
+    }
+    
+    // 프론트엔드에서 보내는 모든 이력서 필드들
+    const { 
+      personal,
+      education,
+      experience,
+      certificates,
+      skills,
+      tools,
+      projects,
+      coverLetter,
+      title,
+      content 
+    } = req.body;
+    
+    const updateData: any = {};
+    
+    // 개인정보 업데이트
+    if (personal) {
+      if (personal.name) updateData.name = personal.name;
+      if (personal.birth) updateData.birth = personal.birth;
+      if (personal.phone) updateData.phone = personal.phone;
+      if (personal.email) updateData.email = personal.email;
+      if (personal.address) updateData.address = personal.address;
+    }
+    
+    // 배열 필드들 업데이트
+    if (education) updateData.education = education;
+    if (experience) updateData.experiences = experience;  // ⚠️ 주의: experiences로 저장
+    if (certificates) updateData.certificates = certificates;
+    if (skills) updateData.skills = skills;
+    if (tools) updateData.tools = tools;
+    if (projects) updateData.projects = projects;
+    if (coverLetter) updateData.coverLetter = coverLetter;
+    
+    // 기존 필드들 (있다면)
+    if (title) updateData.title = title;
+    if (content) updateData.content = content;
+    
+    const updatedResume = await Resume.findByIdAndUpdate(
+      resumeId,
+      updateData,
+      { new: true }
+    );
+    
+    res.status(200).json({ 
+      message: "이력서 수정 완료", 
+      resume: updatedResume 
+    });
+  } catch (error) {
+    console.error("Resume update error:", error);
+    res.status(500).json({ 
+      message: "서버 오류",
+      details: error instanceof Error ? error.message : "알 수 없는 오류"
+    });
+  }
+};
+
+// ✅ 이력서 삭제
+export const deleteResume = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { resumeId } = req.params;
+    
+    if (!res.locals.jwtData?.id) {
+      res.status(401).json({ message: "인증되지 않은 사용자입니다." });
+      return;
     }
 
-    resume.content = updatedContent;
-    if (title) resume.title = title;
-    resume.createdAt = new Date();
-
-    await user.save();
-
-    return res.status(200).json({ message: "이력서 수정 완료", resume });
-  } catch (err: any) {
-    res.status(500).json({ message: "이력서 수정 실패", cause: err.message });
+    const resume = await Resume.findById(resumeId);
+    
+    if (!resume) {
+      res.status(404).json({ message: "이력서를 찾을 수 없습니다." });
+      return;
+    }
+    
+    // 본인 확인
+    if (resume.user.toString() !== res.locals.jwtData?.id) {
+      res.status(403).json({ message: "권한이 없습니다." });
+      return;
+    }
+    
+    // Resume 문서 삭제
+    await Resume.findByIdAndDelete(resumeId);
+    
+    // User 문서에서도 제거
+    await User.findByIdAndUpdate(res.locals.jwtData?.id, {
+      $pull: { resumes: resumeId }
+    });
+    
+    res.status(200).json({ 
+      message: "이력서 삭제 완료" 
+    });
+  } catch (error) {
+    console.error("Resume delete error:", error);
+    res.status(500).json({ 
+      message: "서버 오류",
+      details: error instanceof Error ? error.message : "알 수 없는 오류"
+    });
   }
 };
