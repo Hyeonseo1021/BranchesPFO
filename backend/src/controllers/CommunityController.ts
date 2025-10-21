@@ -1,7 +1,7 @@
 // src/controllers/communityController.ts
 
 import { Request, Response } from 'express';
-import Post from '../models/Postmodel';
+import Post from '../models/Post';
 import Comment from '../models/Commentmodel';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/verifyToken';

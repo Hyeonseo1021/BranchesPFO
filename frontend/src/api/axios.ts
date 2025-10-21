@@ -31,12 +31,15 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    
     if (error.response?.status === 401 || error.response?.status === 403) {
       console.error('❌ 인증 실패!');
-      alert('로그인이 필요하거나 세션이 만료되었습니다.');
-      localStorage.clear();
-      window.location.href = '/login';
+      
+      // ✅ 이미 로그인 페이지에 있으면 리다이렉트하지 않음
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login') {
+        localStorage.clear();
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

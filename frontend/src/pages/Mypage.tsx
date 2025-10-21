@@ -121,8 +121,19 @@ export default function Mypage() {
         <aside className="w-60 border-r pr-6">
           <h3 className="font-bold text-base mb-4">내 활동</h3>
           <ul className="space-y-2">
-            <li><a href="#" className="hover:underline">📝 내가 쓴 글 보기</a></li>
-            <li><a href="#" className="hover:underline">💬 내가 작성한 댓글</a></li>
+            {/* ✅ 글 보기 - ?tab=posts */}
+            <li>
+              <a href="/my-activity?tab=posts" className="hover:underline">
+                📝 내가 쓴 글 보기
+              </a>
+            </li>
+            
+            {/* ✅ 댓글 보기 - ?tab=comments */}
+            <li>
+              <a href="/my-activity?tab=comments" className="hover:underline">
+                💬 내가 작성한 댓글
+              </a>
+            </li>
           </ul>
 
           <h3 className="font-bold text-base mt-6 mb-4">PFO 결과물 보기</h3>
