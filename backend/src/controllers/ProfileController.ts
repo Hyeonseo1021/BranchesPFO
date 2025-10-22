@@ -28,10 +28,6 @@ const getOrCreateProfile = async (userId: string) => {
 export const getMyProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId } = req.params;
-    console.log('========== 프로필 조회 시작 ==========');
-    console.log('userId:', userId);
-    console.log('====================================');
-    
     // ✅ 프로필 없으면 자동 생성
     await getOrCreateProfile(userId);
     
@@ -39,7 +35,6 @@ export const getMyProfile = async (req: Request, res: Response): Promise<void> =
     const profile = await Profile.findOne({ user: userId })
       .populate("user", "nickname email _id");
 
-    console.log('✅ 프로필 조회 완료:', profile?._id);
     res.status(200).json(profile);
   } catch (error: any) {
     console.error("❌ 프로필 조회 오류:", error);

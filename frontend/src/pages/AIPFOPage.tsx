@@ -31,13 +31,41 @@ export default function AIPFOPage() {
         console.error('프로필 불러오기 실패:', error);
       }
     };
-    fetchProfile();
-  }, []);
+    if (isLoggedIn) {
+      fetchProfile();
+    }
+  }, [isLoggedIn]);
+
+  // ✅ 프로필 데이터 검증 함수
+  const checkProfileData = () => {
+    if (!profileData?.profile) return { isValid: false, missing: ['프로필 전체'] };
+
+    const { profile } = profileData;
+    const missing = [];
+
+    // 포트폴리오에 필요한 최소 데이터
+    const hasProjects = profile.projects && profile.projects.length > 0;
+    const hasSkills = profile.skills && profile.skills.length > 0;
+    const hasExperiences = profile.experiences && profile.experiences.length > 0;
+
+    if (!hasProjects) missing.push('프로젝트');
+    if (!hasSkills) missing.push('스킬');
+    if (!hasExperiences) missing.push('경력');
+
+    // 최소 1개 이상 있으면 OK
+    const isValid = hasProjects || hasSkills || hasExperiences;
+
+    return { isValid, missing, hasProjects, hasSkills, hasExperiences };
+  };
 
   // ✅ selection에 따라 다른 API 호출
   const handleGenerate = async () => {
     try {
-      setIsLoading(true);
+      if (!isLoggedIn) {
+        alert("로그인이 필요합니다.");
+        navigate('/login');
+        return;
+      }
 
       if (!profileData) {
         alert('사용자 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
@@ -45,6 +73,46 @@ export default function AIPFOPage() {
       }
 
       const { profile, user } = profileData;
+
+      // ✅ 포트폴리오 선택 시 필수 데이터 검증
+      if (selection === 'portfolio') {
+        const validation = checkProfileData();
+        
+        if (!validation.isValid) {
+          const missingText = validation.missing.join(', ');
+          const confirmed = window.confirm(
+            `⚠️ 포트폴리오 생성에 필요한 정보가 부족합니다!\n\n` +
+            `부족한 정보: ${missingText}\n\n` +
+            `포트폴리오를 제대로 만들려면 프로젝트, 스킬, 경력 중\n` +
+            `최소 1개 이상의 정보가 필요해요.\n\n` +
+            `프로필 작성 페이지로 이동하시겠어요?`
+          );
+          
+          if (confirmed) {
+            navigate('/profile');
+          }
+          return;
+        }
+
+        // ✅ 데이터는 있지만 적을 때 경고
+        const totalItems = 
+          (validation.hasProjects ? 1 : 0) + 
+          (validation.hasSkills ? 1 : 0) + 
+          (validation.hasExperiences ? 1 : 0);
+        
+        if (totalItems === 1) {
+          const confirmed = window.confirm(
+            `📝 현재 입력된 정보가 적어요!\n\n` +
+            `더 풍부한 포트폴리오를 만들려면\n` +
+            `추가 정보를 입력하는 것을 추천드려요.\n\n` +
+            `그래도 지금 생성하시겠어요?`
+          );
+          
+          if (!confirmed) return;
+        }
+      }
+
+      setIsLoading(true);
 
       if (selection === 'resume') {
         // ✅ 이력서 생성
@@ -54,14 +122,14 @@ export default function AIPFOPage() {
           phone: profile.phone || '',
           birth: profile.birth || '',
           desiredJob: prompt || '백엔드 개발자',
-          address: profile.address || '',  // ✅ 문자열로 직접 전달
+          address: profile.address || '',
           certificates: profile.certificates || [],
           experiences: profile.experiences || [],
           education: profile.education || [],
           skills: profile.skills || [],
           tools: profile.tools || [],
           projects: profile.projects || [],
-          introductionKeywords: profile.introductionKeywords || {  // ✅ introduction 대신 introductionKeywords
+          introductionKeywords: profile.introductionKeywords || {
             positions: [],
             strengths: [],
             interests: [],
@@ -73,12 +141,19 @@ export default function AIPFOPage() {
         navigate(`/resume/result/${response.data.resumeId}`);
 
       } else {
-        // 포트폴리오 생성 (API 엔드포인트 확인 필요)
+        // ✅ 포트폴리오 생성 - 제목 자동 생성!
+        const userName = profile.name || user.nickname || '사용자';
+        const today = new Date();
+        const dateString = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+        const autoTitle = `${userName}님의 포트폴리오 - ${dateString}`;
+        
+        console.log('🎯 자동 생성된 제목:', autoTitle);
+        
         const response = await axiosInstance.post('/portfolio/generate', {
           name: profile.name || user.nickname || '',
           email: user.email || '',
           phone: profile.phone || '',
-          title: prompt || '내 포트폴리오',
+          title: autoTitle,  // ✅ 자동 생성된 제목!
           
           // ✅ 키워드
           introductionKeywords: profile.introductionKeywords || {
@@ -98,7 +173,10 @@ export default function AIPFOPage() {
           // ✅ 선택적 정보 (있으면 더 풍부한 포트폴리오)
           experiences: profile.experiences || [],
           education: profile.education || [],
-          certificates: profile.certificates || []
+          certificates: profile.certificates || [],
+          
+          // ✅ 🎨 사용자 프롬프트 추가! (가장 중요!)
+          userPrompt: prompt || ''
         });
 
         console.log('✅ 포트폴리오 생성 성공:', response.data);
@@ -113,6 +191,16 @@ export default function AIPFOPage() {
       setIsLoading(false);
     }
   };
+
+  // ✅ 프로필 상태 계산
+  const validation = profileData ? checkProfileData() : null;
+  const profileStatus = validation ? {
+    isValid: validation.isValid,
+    hasProjects: validation.hasProjects,
+    hasSkills: validation.hasSkills,
+    hasExperiences: validation.hasExperiences,
+    missing: validation.missing
+  } : null;
 
   return (
     <>
@@ -172,9 +260,52 @@ export default function AIPFOPage() {
             </label>
           </div>
 
+          {/* ✅ 포트폴리오 선택 시 프로필 상태 표시 */}
+          {selection === 'portfolio' && profileStatus && (
+            <div className={`max-w-2xl mx-auto mb-6 p-4 rounded-lg border-2 ${
+              profileStatus.isValid 
+                ? 'bg-green-50 border-green-300' 
+                : 'bg-yellow-50 border-yellow-300'
+            }`}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">
+                  {profileStatus.isValid ? '✅' : '⚠️'}
+                </span>
+                <span className="font-semibold">
+                  {profileStatus.isValid ? '프로필 정보 확인됨' : '프로필 정보 부족'}
+                </span>
+              </div>
+              <div className="text-sm space-y-1">
+                <div className="flex items-center gap-2">
+                  <span>{profileStatus.hasProjects ? '✅' : '❌'}</span>
+                  <span>프로젝트 {profileStatus.hasProjects ? '있음' : '없음'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>{profileStatus.hasSkills ? '✅' : '❌'}</span>
+                  <span>스킬 {profileStatus.hasSkills ? '있음' : '없음'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>{profileStatus.hasExperiences ? '✅' : '❌'}</span>
+                  <span>경력 {profileStatus.hasExperiences ? '있음' : '없음'}</span>
+                </div>
+              </div>
+              {!profileStatus.isValid && (
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="mt-3 w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition"
+                >
+                  프로필 작성하러 가기 →
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ✅ 프롬프트 입력란 - 포트폴리오와 이력서에 따라 다른 설명 */}
           <div className="max-w-2xl mx-auto mb-10">
             <label htmlFor="aiPrompt" className="block text-center font-semibold mb-2">
-              {selection === 'portfolio' ? '포트폴리오 프롬프트 입력' : '이력서 프롬프트 입력'}
+              {selection === 'portfolio' 
+                ? '🎨 원하는 포트폴리오 스타일 입력 (선택사항)' 
+                : '📝 이력서 프롬프트 입력'}
             </label>
             <textarea
               id="aiPrompt"
@@ -182,54 +313,71 @@ export default function AIPFOPage() {
               onChange={(e) => setPrompt(e.target.value)}
               placeholder={
                 selection === 'portfolio'
-                  ? '예: 사용자 경험을 잘 드러낼 수 있도록 포트폴리오를 만들어줘.'
+                  ? '예시:\n• 글래스모피즘 스타일로 만들어주세요\n• 다크모드로 해주세요\n• 미니멀하고 깔끔한 디자인 원해요\n• 프로젝트를 갤러리 형식으로 보여주세요\n\n입력하지 않으면 AI가 자동으로 멋진 디자인을 선택해요!'
                   : '예: 삼성전자에 지원할 수 있도록 이력서를 작성해줘.'
               }
               className="w-full p-3 border border-gray-300 rounded-md resize-none"
-              rows={5}
+              rows={selection === 'portfolio' ? 6 : 3}
             />
+            
+            {/* ✅ 포트폴리오일 때만 추가 설명 표시 */}
+            {selection === 'portfolio' && (
+              <div className="mt-3">
+                <p className="text-xs text-gray-600 text-center">
+                  💡 팁: 구체적으로 설명할수록 원하는 결과물을 얻을 수 있어요!<br />
+                  비워두면 AI가 랜덤으로 멋진 디자인을 만들어줘요.
+                </p>
+                <p className="text-xs text-green-600 text-center mt-2">
+                  📁 포트폴리오는 자동으로 "<strong>{profileData?.profile?.name || profileData?.user?.nickname || '사용자'}님의 포트폴리오 - {new Date().toLocaleDateString('ko-KR')}</strong>" 제목으로 저장돼요
+                </p>
+              </div>
+            )}
           </div>
 
-          <div className="flex justify-center gap-8 mb-10">
-            {/* ✅ 내 정보 불러오기 */}
+          {/* ✅ 생성 버튼 - 중앙에 크게 */}
+          <div className="flex justify-center mb-10">
             <div 
-              className="w-40 h-48 text-center cursor-pointer hover:shadow-xl transition"
-              onClick={() => {
-                if (!isLoggedIn) {
-                  alert("로그인이 필요합니다.");
-                  navigate('/login');
-                } else {
-                  handleGenerate();
-                }
-              }}
+              className={`w-64 h-64 text-center cursor-pointer hover:shadow-2xl transition-all transform hover:scale-105 ${
+                selection === 'portfolio' && profileStatus && !profileStatus.isValid 
+                  ? 'opacity-60' 
+                  : ''
+              }`}
+              onClick={handleGenerate}
             >
-              <Card className="w-full h-full">
-                <CardContent className="flex flex-col items-center justify-center h-full">
-                  <img src="/images/Branches_2.0_Logo.png" alt="내정보 불러오기" className="w-12 h-12 mb-2" />
-                  <span>내정보 불러오기</span>
+              <Card className="w-full h-full bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-300">
+                <CardContent className="flex flex-col items-center justify-center h-full p-6">
+                  <img 
+                    src="/images/Branches_2.0_Logo.png" 
+                    alt="AI로 생성하기" 
+                    className="w-20 h-20 mb-4 animate-pulse" 
+                  />
+                  <span className="text-xl font-bold text-green-700 mb-2">
+                    내 정보 불러오기
+                  </span>
+                  <span className="text-sm text-gray-600">
+                    내 프로필 정보로 {selection === 'portfolio' ? '포트폴리오' : '이력서'} 만들기
+                  </span>
+                  {selection === 'portfolio' && profileStatus && !profileStatus.isValid && (
+                    <p className="text-xs text-red-500 mt-3 font-semibold">
+                      ⚠️ 프로필 작성 필요
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </div>
+          </div>
 
-            {/* ✅ 지금 직접 입력하기 */}
-            <div
-              onClick={() => {
-                if (!isLoggedIn) {
-                  alert("로그인이 필요합니다.");
-                  navigate('/login');
-                } else {
-                  navigate('/portfolio');
-                }
-              }}
-              className="w-40 h-48 text-center cursor-pointer hover:shadow-xl transition"
+          {/* ✅ 프로필 작성 안내 */}
+          <div className="text-center mb-10">
+            <p className="text-sm text-gray-600 mb-2">
+              프로필 정보가 없으신가요?
+            </p>
+            <button
+              onClick={() => navigate('/profile')}
+              className="text-green-600 font-semibold hover:underline"
             >
-              <Card className="w-full h-full">
-                <CardContent className="flex flex-col items-center justify-center h-full">
-                  <img src="/images/Branches_2.0_Logo.png" alt="지금 직접 입력하기" className="w-12 h-12 mb-2" />
-                  <span>지금 직접 입력하기</span>
-                </CardContent>
-              </Card>
-            </div>
+              프로필 작성하러 가기 →
+            </button>
           </div>
 
           <h4 className="text-center text-lg font-semibold mb-4">

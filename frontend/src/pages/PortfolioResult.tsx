@@ -113,7 +113,7 @@ export default function PortfolioResult() {
           srcDoc={portfolio.generatedContent}
           className="w-full h-[800px] border border-gray-300 rounded-lg shadow-xl bg-white"
           title="포트폴리오 미리보기"
-          sandbox="allow-same-origin"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
         />
       </main>
 
