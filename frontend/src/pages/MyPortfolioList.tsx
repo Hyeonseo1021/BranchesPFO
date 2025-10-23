@@ -84,7 +84,7 @@ export default function MyPortfolioList() {
           <div className="text-center py-20 bg-gray-50 rounded-lg border">
             <p className="text-gray-500 mb-4">아직 생성된 포트폴리오가 없습니다.</p>
             <button
-              onClick={() => navigate('/aipfo')}
+              onClick={() => navigate('/aipfopage')}
               className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
             >
               포트폴리오 생성하러 가기

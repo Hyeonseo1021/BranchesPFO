@@ -5,6 +5,12 @@ import Footer from './Footer';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 
+declare global {
+  interface Window {
+    daum: any;
+  }
+}
+
 // 키워드 옵션 정의
 const KEYWORD_OPTIONS = {
   positions: [
@@ -33,6 +39,7 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [birth, setBirth] = useState('');
   const [address, setAddress] = useState('');
+  const [detailAddress, setDetailAddress] = useState('');
   const [phone, setPhone] = useState('');
   
   // ✅ 키워드 선택
@@ -71,7 +78,10 @@ export default function ProfilePage() {
           setName(data.name || "");
           setBirth(data.birth || "");
           setPhone(data.phone || "");
-          setAddress(data.address || "");
+          const fullAddress = data.address || "";
+          const addressParts = fullAddress.split('|||');
+          setAddress(addressParts[0] || "");
+          setDetailAddress(addressParts[1] || "");
           
           // ✅ 키워드 데이터 불러오기
           if (data.introductionKeywords) {
@@ -146,7 +156,7 @@ export default function ProfilePage() {
       name,
       birth,
       phone,
-      address,
+      address: detailAddress ? `${address}|||${detailAddress}` : address,
       avatar: photo,
       introductionKeywords: selectedKeywords,
       education: education.map((item) => {
@@ -189,19 +199,14 @@ export default function ProfilePage() {
   };
 
   /** 주소 검색 */
-  const handleAddressSearch = async () => {
-    if (!address) {
-      alert('주소를 입력해주세요.');
-      return;
-    }
-    try {
-      const response = await axiosInstance.get(`/auth/address/search?keyword=${encodeURIComponent(address)}`);
-      console.log(response.data);
-      alert('주소 검색 API가 호출되었습니다. (개발자 콘솔 확인)');
-    } catch (error) {
-      console.error("주소 검색 오류:", error);
-      alert('주소 검색 중 오류가 발생했습니다.');
-    }
+  const handleAddressSearch = () => {
+    new window.daum.Postcode({
+      oncomplete: function(data: any) {
+        const fullAddress = data.roadAddress || data.jibunAddress;
+        setAddress(fullAddress);
+        setDetailAddress('');
+      }
+    }).open();
   };
 
   return (
@@ -258,16 +263,29 @@ export default function ProfilePage() {
                 <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border p-2 rounded text-sm" />
               </div>
               <div>
-                <label className="block text-xs mb-1">주소</label>
-                <div className="flex gap-2">
-                  <input value={address} onChange={(e) => setAddress(e.target.value)} className="flex-1 border p-2 rounded text-sm" />
+                <label className="block mb-1 font-medium">주소</label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    value={address}
+                    placeholder=""
+                    className="flex-1 border p-2 rounded bg-gray-50"
+                    readOnly
+                  />
                   <button
+                    type="button"
                     onClick={handleAddressSearch}
-                    className="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 whitespace-nowrap"
                   >
-                    주소 찾기
+                    우편번호 검색
                   </button>
                 </div>
+                <input
+                  id="detailAddress"
+                  value={detailAddress}
+                  onChange={(e) => setDetailAddress(e.target.value)}
+                  placeholder="상세주소 입력 (예: 101동 203호)"
+                  className="w-full border p-2 rounded"
+                />
               </div>
             </div>
           </div>

@@ -58,6 +58,11 @@ const PortfolioSchema = new mongoose.Schema({
     date: String
   }],
 
+  userPrompt: {
+    type: String,
+    default: ''
+  },
+
   // AI 생성된 포트폴리오 내용
   generatedContent: {
     type: String,  // HTML 또는 마크다운

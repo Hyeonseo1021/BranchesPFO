@@ -19,6 +19,7 @@ import PortfolioEdit from './pages/PortfolioEdit';
 import Unauthorized from './pages/Unauthorized';
 import MyResumeList from './pages/MyResumeList';
 import MyPortfolioList from './pages/MyPortfolioList';
+import MyActivity from './pages/MyActivity';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/write" element={<WritePage />} />
           <Route path="/post/:id" element={<CmDetail />} />
+          <Route path="/my-activity" element={<MyActivity />} />
           <Route path="/aichatbot" element={<AIChatbot />} />
           <Route path="/Mypage" element={<Mypage />} />
           <Route path="/mypage/resumes" element={<MyResumeList />} />

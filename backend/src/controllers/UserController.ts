@@ -242,3 +242,54 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ message: "서버 오류 발생", cause: error.message });
   }
 };
+
+export const searchAddress = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { keyword } = req.query;
+
+    if (!keyword) {
+      res.status(400).json({ message: "검색어를 입력하세요." });
+      return;
+    }
+
+    // 우체국 우편번호 API 사용
+    const apiUrl = `https://api.odcloud.kr/api/15040431/v1/uddi:${encodeURIComponent(keyword as string)}?page=1&perPage=10&serviceKey=YOUR_API_KEY`;
+
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    res.status(200).json({ 
+      message: "주소 검색 성공", 
+      addresses: data.data || [] 
+    });
+  } catch (error: any) {
+    console.error("주소 검색 오류:", error);
+    res.status(500).json({ message: "주소 검색 실패", error: error.message });
+  }
+};
+
+// 주소 검색 API (대체 - 공공데이터포털 우편번호 서비스)
+export const searchAddressAlternative = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { keyword } = req.query;
+
+    if (!keyword) {
+      res.status(400).json({ message: "검색어를 입력하세요." });
+      return;
+    }
+
+    // 공공데이터포털 우편번호 서비스 API
+    const apiUrl = `http://openapi.epost.go.kr/postal/retrieveNewAdressAreaCdService/retrieveNewAdressAreaCdService/getNewAddressListAreaCd?ServiceKey=YOUR_API_KEY&searchSe=road&srchwrd=${encodeURIComponent(keyword as string)}&countPerPage=10&currentPage=1`;
+
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    res.status(200).json({ 
+      message: "주소 검색 성공", 
+      addresses: data || [] 
+    });
+  } catch (error: any) {
+    console.error("주소 검색 오류:", error);
+    res.status(500).json({ message: "주소 검색 실패", error: error.message });
+  }
+};

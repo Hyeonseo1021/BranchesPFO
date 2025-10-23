@@ -1,3 +1,5 @@
+// src/models/Profile.ts
+
 import mongoose from 'mongoose';
 
 const ProfileSchema = new mongoose.Schema({
@@ -8,29 +10,28 @@ const ProfileSchema = new mongoose.Schema({
     unique: true
   },
 
-  // 프로필 사진
   avatar: {
-    type: String, // 이미지 URL (ex: S3, Cloudinary, local uploads)
-    default: ''   // 비어있으면 기본 이미지 사용
+    type: String,
+    default: ''
   },
 
-  // 기본 인적 사항
-  name: { type: String},
+  name: { type: String },
   birth: { type: String },
   email: { type: String },
   phone: { type: String },
   address: { type: String },
 
-  // 자기소개
+  // ✅ 자기소개 키워드 - validation 수정
   introductionKeywords: {
     positions: {
       type: [String],
       default: [],
       validate: {
         validator: function(v: string[]) {
-          return v.length >= 3;
+          // ✅ 빈 배열이거나 3개 이상이면 통과
+          return v.length === 0 || v.length >= 3;
         },
-        message: '희망 직무는 최소 3개 이상 선택해주세요.'
+        message: '희망 직무는 0개 또는 최소 3개 이상 선택해주세요.'
       }
     },
     strengths: {
@@ -38,9 +39,9 @@ const ProfileSchema = new mongoose.Schema({
       default: [],
       validate: {
         validator: function(v: string[]) {
-          return v.length >= 3;
+          return v.length === 0 || v.length >= 3;
         },
-        message: '강점은 최소 3개 이상 선택해주세요.'
+        message: '강점은 0개 또는 최소 3개 이상 선택해주세요.'
       }
     },
     interests: {
@@ -48,9 +49,9 @@ const ProfileSchema = new mongoose.Schema({
       default: [],
       validate: {
         validator: function(v: string[]) {
-          return v.length >= 3;
+          return v.length === 0 || v.length >= 3;
         },
-        message: '관심 분야는 최소 3개 이상 선택해주세요.'
+        message: '관심 분야는 0개 또는 최소 3개 이상 선택해주세요.'
       }
     },
     goals: {
@@ -58,16 +59,15 @@ const ProfileSchema = new mongoose.Schema({
       default: [],
       validate: {
         validator: function(v: string[]) {
-          return v.length >= 3;
+          return v.length === 0 || v.length >= 3;
         },
-        message: '목표는 최소 3개 이상 선택해주세요.'
+        message: '목표는 0개 또는 최소 3개 이상 선택해주세요.'
       }
     }
   },
 
-  // 학력
   education: [{
-    schoolType: {  // ✅ 추가
+    schoolType: {
       type: String,
       enum: ['고등학교', '대학교', '대학원']
     },
@@ -77,7 +77,6 @@ const ProfileSchema = new mongoose.Schema({
     period: String
   }],
 
-  // 경력
   experiences: [{
     company: String,
     position: String,
@@ -85,20 +84,15 @@ const ProfileSchema = new mongoose.Schema({
     description: String
   }],
 
-  // 자격증
   certificates: [{
     name: String,
     issuedBy: String,
     date: String
   }],
 
-  // 기술 역량
   skills: [String],
-
-  // 활용 툴
   tools: [String],
 
-  // 프로젝트 경험
   projects: [{
     title: String,
     description: String,
