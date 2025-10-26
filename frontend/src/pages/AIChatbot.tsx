@@ -45,9 +45,7 @@ export default function AIChatbotPage() {
     }
   };
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-green-50 to-blue-50">

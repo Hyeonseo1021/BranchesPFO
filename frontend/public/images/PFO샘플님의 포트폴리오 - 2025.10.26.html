@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PFO샘플 - Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-white: #ffffff;
+            --soft-gray: #f8f9fa;
+            --light-gray: #e9ecef;
+            --medium-gray: #6c757d;
+            --dark-gray: #343a40;
+            --accent-blue: #007bff;
+            --accent-green: #28a745;
+            --accent-purple: #6f42c1;
+            --accent-orange: #fd7e14;
+            --shadow-light: 0 2px 10px rgba(0,0,0,0.05);
+            --shadow-medium: 0 4px 20px rgba(0,0,0,0.1);
+            --shadow-heavy: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--dark-gray);
+            background: var(--primary-white);
+            overflow-x: hidden;
+        }
+
+        /* Floating Navigation */
+        .floating-nav {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--light-gray);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot.active {
+            background: var(--accent-blue);
+            transform: scale(1.3);
+        }
+
+        .nav-dot:hover {
+            background: var(--accent-blue);
+            transform: scale(1.2);
+        }
+
+        .nav-dot::after {
+            content: attr(data-section);
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--dark-gray);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-white) 0%, var(--soft-gray) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,123,255,0.03) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(-30px, -30px) rotate(120deg); }
+            66% { transform: translate(30px, 30px) rotate(240deg); }
+        }
+
+        .hero-content {
+            max-width: 700px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--medium-gray);
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: var(--medium-gray);
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+            box-shadow: var(--shadow-light);
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--dark-gray);
+            border: 2px solid var(--light-gray);
+        }
+
+        .btn-outline:hover {
+            background: var(--dark-gray);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 100px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+
+        /* About Section */
+        .about {
+            background: var(--soft-gray);
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .about-image {
+            position: relative;
+        }
+
+        .about-placeholder {
+            width: 300px;
+            height: 300px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4rem;
+            margin: 0 auto;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .about-text h3 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--dark-gray);
+        }
+
+        .about-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: var(--medium-gray);
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+            margin-top: 5px;
+        }
+
+        /* Skills Section */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .skill-category {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-light);
+            transition: all 0.3s ease;
+        }
+
+        .skill-category:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .skill-category h4 {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            color: var(--dark-gray);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .skill-category i {
+            font-size: 1.5rem;
+            color: var(--accent-blue);
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-tag {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag.react { background: #e3f2fd; color: #1565c0; }
+        .skill-tag.java { background: #fff3e0; color: #ef6c00; }
+        .skill-tag.cpp { background: #f3e5f5; color: #7b1fa2; }
+        .skill-tag.github { background: #f5f5f5; color: #424242; }
+        .skill-tag.figma { background: #e8f5e8; color: #2e7d32; }
+        .skill-tag.notion { background: #fff8e1; color: #f57f17; }
+
+        .skill-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-light);
+        }
+
+        /* Projects Section */
+        .projects {
+            background: var(--soft-gray);
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-light);
+            transition: all 0.3s ease;
+            margin-bottom: 40px;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .project-header {
+            padding: 40px;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .project-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .project-role {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .project-content {
+            padding: 40px;
+        }
+
+        .project-description {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: var(--medium-gray);
+            margin-bottom: 30px;
+        }
+
+        .project-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .project-detail {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .project-detail-label {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .project-detail-value {
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .project-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        /* Education & Certifications */
+        .education-cert {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .edu-cert-section h4 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: var(--dark-gray);
+        }
+
+        .edu-cert-item {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-light);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .edu-cert-item:hover {
+            transform: translateX(10px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .edu-cert-item h5 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--dark-gray);
+        }
+
+        .edu-cert-item .status {
+            color: var(--accent-blue);
+            font-weight: 500;
+        }
+
+        /* Contact Section */
+        .contact {
+            background: var(--dark-gray);
+            color: white;
+            text-align: center;
+        }
+
+        .contact .section-title {
+            color: white;
+        }
+
+        .contact .section-title::after {
+            background: white;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .contact-item {
+            padding: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-5px);
+        }
+
+        .contact-item i {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+        }
+
+        .contact-item h4 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .contact-item a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .contact-item a:hover {
+            opacity: 1;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .floating-nav {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+
+            .about-placeholder {
+                width: 250px;
+                height: 250px;
+            }
+
+            .about-stats {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .education-cert {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .section {
+                padding: 60px 20px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+
+        /* Scroll Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Navigation -->
+    <div class="floating-nav">
+        <div class="nav-dot active" data-section="홈" onclick="scrollToSection('hero')"></div>
+        <div class="nav-dot" data-section="소개" onclick="scrollToSection('about')"></div>
+        <div class="nav-dot" data-section="스킬" onclick="scrollToSection('skills')"></div>
+        <div class="nav-dot" data-section="프로젝트" onclick="scrollToSection('projects')"></div>
+        <div class="nav-dot" data-section="학력" onclick="scrollToSection('education')"></div>
+        <div class="nav-dot" data-section="연락처" onclick="scrollToSection('contact')"></div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">PFO샘플</h1>
+            <p class="hero-subtitle">풀스택 개발자를 꿈꾸는</p>
+            <p class="hero-description">
+                문제 해결에 대한 열정과 협업을 통한 성장을 추구하며,<br>
+                기술을 통해 더 나은 세상을 만들고 싶습니다.
+            </p>
+            <div class="hero-cta">
+                <a href="#projects" class="btn btn-primary">프로젝트 보기</a>
+                <a href="#contact" class="btn btn-outline">연락하기</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about">
+        <h2 class="section-title fade-in">About Me</h2>
+        <div class="about-content fade-in">
+            <div class="about-image">
+                <div class="about-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+            <div class="about-text">
+                <h3>안녕하세요, 개발자 PFO샘플입니다</h3>
+                <p>
+                    순천대학교에서 컴퓨터공학을 전공하며 웹 개발부터 AI/머신러닝까지 다양한 기술 분야에 관심을 가지고 있습니다. 
+                    특히 문제 해결 능력과 팀워크를 바탕으로 한 협업을 중요시하며, 책임감 있는 개발자로 성장하고자 합니다.
+                </p>
+                <p>
+                    현재는 풀스택 개발자를 목표로 프론트엔드와 백엔드 기술을 균형있게 학습하고 있으며, 
+                    클라우드 인프라와 모바일 앱 개발에도 깊은 관심을 가지고 있습니다.
+                </p>
+                <div class="about-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">4</span>
+                        <span class="stat-label">학년</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">3+</span>
+                        <span class="stat-label">기술 스택</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">2</span>
+                        <span class="stat-label">자격증</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="section">
+        <h2 class="section-title fade-in">Skills & Tools</h2>
+        <div class="skills-grid fade-in">
+            <div class="skill-category">
+                <h4><i class="fas fa-code"></i> 개발 언어</h4>
+                <div class="skill-tags">
+                    <span class="skill-tag react">React</span>
+                    <span class="skill-tag java">Java</span>
+                    <span class="skill-tag cpp">C++</span>
+                </div>
+            </div>
+            <div class="skill-category">
+                <h4><i class="fas fa-tools"></i> 도구 & 협업</h4>
+                <div class="skill-tags">
+                    <span class="skill-tag github">GitHub</span>
+                    <span class="skill-tag figma">Figma</span>
+                    <span class="skill-tag notion">Notion</span>
+                </div>
+            </div>
+            <div class="skill-category">
+                <h4><i class="fas fa-heart"></i> 관심 분야</h4>
+                <div class="skill-tags">
+                    <span class="skill-tag react">웹 개발</span>
+                    <span class="skill-tag java">AI/머신러닝</span>
+                    <span class="skill-tag cpp">클라우드/인프라</span>
+                    <span class="skill-tag github">모바일 앱</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="section projects">
+        <h2 class="section-title fade-in">Projects</h2>
+        
+        <div class="project-card fade-in">
+            <div class="project-header">
+                <h3 class="project-title">branches 샘플</h3>
+                <p class="project-role">프론트엔드 개발자</p>
+            </div>
+            <div class="project-content">
+                <p class="project-description">
+                    branches 샘플을 위한 설명입니다. 이 프로젝트는 다양한 기술 스택을 활용하여 개발된 웹 애플리케이션으로,
+                    사용자 경험을 중시한 인터페이스 구현에 중점을 두었습니다.
+                </p>
+                
+                <div class="project-details">
+                    <div class="project-detail">
+                        <span class="project-detail-label">기술 스택</span>
+                        <div class="skill-tags">
+                            <span class="skill-tag react">React</span>
+                            <span class="skill-tag java">Java</span>
+                            <span class="skill-tag cpp">C++</span>
+                        </div>
+                    </div>
+                    <div class="project-detail">
+                        <span class="project-detail-label">개발 기간</span>
+                        <span class="project-detail-value">2025.3.1 ~ 10.26</span>
+                    </div>
+                </div>
+                
+                <div class="project-footer">
+                    <div class="project-detail">
+                        <span class="project-detail-label">담당 역할</span>
+                        <span class="project-detail-value">프론트엔드 개발자</span>
+                    </div>
+                    <a href="https://github.com/Hyeonseo1021/BranchesPFO" target="_blank" class="btn btn-primary">
+                        <i class="fab fa-github"></i> GitHub 보기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Education & Certifications Section -->
+    <section id="education" class="section">
+        <h2 class="section-title fade-in">Education & Certifications</h2>
+        <div class="education-cert fade-in">
+            <div class="edu-cert-section">
+                <h4>학력</h4>
+                <div class="edu-cert-item">
+                    <h5>순천대학교</h5>
+                    <p class="status">4학년 재학중</p>
+                    <p>2022.03.01 ~ 현재</p>
+                </div>
+            </div>
+            
+            <div class="edu-cert-section">
+                <h4>자격증</h4>
+                <div class="edu-cert-item">
+                    <h5>정보처리기사</h5>
+                    <p>국가기술자격</p>
+                </div>
+                <div class="edu-cert-item">
+                    <h5>컴퓨터활용능력</h5>
+                    <p>대한상공회의소</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact">
+        <h2 class="section-title fade-in">Contact</h2>
+        <div class="contact-grid fade-in">
+            <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                <h4>Email</h4>
+                <a href="mailto:skdus0927@naver.com">skdus0927@naver.com</a>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                <h4>Phone</h4>
+                <a href="tel:010-1234-5321">010-1234-5321</a>
+            </div>
+            <div class="contact-item">
+                <i class="fab fa-github"></i>
+                <h4>GitHub</h4>
+                <a href="https://github.com/Hyeonseo1021/BranchesPFO" target="_blank">프로젝트 보기</a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Smooth scroll navigation
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        // Update active navigation dot on scroll
+        window.addEventListener('scroll', () => {
+            const sections = ['hero', 'about', 'skills', 'projects', 'education', 'contact'];
+            const navDots = document.querySelectorAll('.nav-dot');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                const element = document.getElementById(section);
+                const rect = element.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    currentSection = section;
+                }
+            });
+            
+            navDots.forEach((dot, index) => {
+                dot.classList.remove('active');
+                if (sections[index] === currentSection) {
+                    dot.classList.add('active');
+                }
+            });
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Smooth scroll for CTA buttons
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

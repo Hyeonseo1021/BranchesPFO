@@ -61,9 +61,9 @@ export default function ResumeResult() {
       try {
         const response = await axiosInstance.get(`/resume/${resumeId}`);
         console.log('✅ 이력서 조회 성공:', response.data);
-        
+
         const resume = response.data.resume;
-        
+
         const formattedData: ResumeData = {
           personal: {
             name: resume.name || '',
@@ -85,7 +85,7 @@ export default function ResumeResult() {
             motivation: ''
           }
         };
-        
+
         console.log('📋 변환된 데이터:', formattedData);
         setResumeData(formattedData);
       } catch (error: any) {
@@ -102,63 +102,138 @@ export default function ResumeResult() {
     }
   }, [resumeId, navigate]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full border-4 border-green-500 border-t-transparent h-12 w-12 mx-auto mb-4" />
-          <p>이력서를 불러오는 중...</p>
-        </div>
-      </div>
-    );
-  }
+  // ✅ 템플릿 렌더링 함수
+const renderTemplate = () => {
+  if (!resumeData) return null; // ✅ 추가됨 (null일 때 바로 반환)
+    switch (template) {
+      case 'modern':
+        return (
+          <>
+            {/* 🌿 모던 템플릿 */}
+            <main className="w-[210mm] h-[297mm] bg-white shadow-2xl rounded-xl p-10 border border-gray-300 text-[13px] leading-relaxed">
+              <header className="text-center border-b pb-4 mb-6">
+                <h1 className="text-3xl font-bold text-green-700">{resumeData?.personal?.name}</h1>
+                <p className="text-gray-600 text-sm mt-1">
+                  {resumeData?.personal?.email} | {resumeData?.personal?.phone}
+                </p>
+                <p className="text-gray-500 text-sm mt-1">{resumeData?.personal?.address}</p>
+              </header>
 
-  if (!resumeData) {
-    return <div>이력서 데이터가 없습니다.</div>;
-  }
+              <section className="mb-5">
+                <h2 className="text-lg font-semibold text-green-800 border-b mb-2">🎓 Education</h2>
+                {resumeData?.education?.length ? (
+                  resumeData.education.map((edu, i) => (
+                    <div key={i} className="mb-1 text-sm">
+                      <p className="font-bold">{edu.school}</p>
+                      <p className="text-gray-700">
+                        {edu.major} ({edu.period})
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-sm">학력 정보 없음</p>
+                )}
+              </section>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-green-100 font-sans">
-      <Header />
+              <section className="mb-5">
+                <h2 className="text-lg font-semibold text-green-800 border-b mb-2">💼 Experience</h2>
+                {resumeData?.experience?.length ? (
+                  resumeData.experience.map((exp, i) => (
+                    <div key={i} className="mb-3">
+                      <p className="font-bold">{exp.company}</p>
+                      <p className="text-gray-700 text-sm">
+                        {exp.position} ({exp.period})
+                      </p>
+                      <p className="text-gray-600 text-sm">{exp.description}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-sm">경력 정보 없음</p>
+                )}
+              </section>
 
-      <section
-        className="relative text-center py-28 px-4 bg-center bg-no-repeat"
-        style={{
-          backgroundImage: "url('/images/PFbanner.png')",
-          backgroundSize: 'cover',
-          minHeight: '300px',
-        }}
-      >
-        <h2 className="text-3xl md:text-4xl font-bold text-white drop-shadow-[2px_2px_2px_rgba(0,0,0,0.5)] mb-4">
-          분석 완료! 이력서가 완성됐어요 🎉
-        </h2>
-        <p className="text-white text-lg drop-shadow-[1px_1px_1px_rgba(0,0,0,0.4)]">
-          지금 PFO AI가 생성한 이력서를 확인해보세요
-        </p>
-      </section>
+              <section className="mb-5">
+                <h2 className="text-lg font-semibold text-green-800 border-b mb-2">🏆 Certificates</h2>
+                {resumeData?.certificates?.length ? (
+                  resumeData.certificates.map((cert, i) => (
+                    <p key={i} className="text-sm text-gray-700">
+                      {cert.name} ({cert.date}) - {cert.issuedBy}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-sm">자격증 정보 없음</p>
+                )}
+              </section>
 
-      <div className="text-center text-sm text-gray-700 italic mt-20 mb-12">
-        PFO AI가 <span className="font-semibold text-green-700">{resumeData.personal?.name || '사용자'}</span> 님의 입력 정보를 바탕으로,
-        <br />
-        <span className="font-semibold">간결하고 깔끔한 이력서</span>를 원하시는 스타일에 맞춰 작성해보았어요 😊
-      </div>
+              <section className="mb-5">
+                <h2 className="text-lg font-semibold text-green-800 border-b mb-2">🛠 Skills</h2>
+                <div className="flex flex-wrap gap-2">
+                  {resumeData?.skills?.length ? (
+                    resumeData.skills.map((s, i) => (
+                      <span key={i} className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">
+                        {s}
+                      </span>
+                    ))
+                  ) : (
+                    <p className="text-gray-400 text-sm">기술 스택 정보 없음</p>
+                  )}
+                </div>
+              </section>
 
-      {/* 템플릿 선택 */}
-      <div className="max-w-7xl mx-auto mt-10 px-4 flex justify-end">
-        <select
-          className="border px-3 py-1 rounded"
-          value={template}
-          onChange={(e) => setTemplate(e.target.value as 'default' | 'modern')}
-        >
-          <option value="default">기본 템플릿</option>
-          <option value="modern">모던 템플릿</option>
-        </select>
-      </div>
+              <section className="mb-5">
+                <h2 className="text-lg font-semibold text-green-800 border-b mb-2">💡 Projects</h2>
+                {resumeData?.projects?.length ? (
+                  resumeData.projects.slice(0, 2).map((p, i) => (
+                    <div key={i} className="mb-3">
+                      <p className="font-bold">{p.title}</p>
+                      <p className="text-sm text-gray-700">{p.description}</p>
+                      <p className="text-xs text-gray-500 mt-1">{p.techStack.join(', ')}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-sm">프로젝트 정보 없음</p>
+                )}
+              </section>
+            </main>
 
-      {/* 이력서 표시 */}
-      <div className="flex justify-center flex-wrap gap-6 my-10 px-4">
-        {/* 1페이지 */}
-        <main className="w-[210mm] h-[297mm] bg-white shadow-lg p-6 border border-black text-[13px] leading-normal">
+            {/* 🌿 모던 자기소개서 페이지 */}
+            <main className="w-[210mm] h-[297mm] bg-white shadow-xl rounded-xl p-10 border border-gray-300 text-[13px] leading-relaxed">
+              <h3 className="text-xl font-bold mb-4 text-green-700">자기소개서</h3>
+              <div className="space-y-5">
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-1">주요경력 및 업무강점</h4>
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {resumeData?.coverLetter?.strengths || '내용이 없습니다.'}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-1">성장과정</h4>
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {resumeData?.coverLetter?.growth || '내용이 없습니다.'}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-1">성격의 장단점</h4>
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {resumeData?.coverLetter?.personality || '내용이 없습니다.'}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-1">지원동기 및 입사포부</h4>
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {resumeData?.coverLetter?.motivation || '내용이 없습니다.'}
+                  </p>
+                </div>
+              </div>
+            </main>
+          </>
+        );
+
+      default:
+        return (
+          <>
+            {/* 📄 기존 기본 이력서 전체 (생략 없이 그대로 유지) */}
+ <main className="w-[210mm] h-[297mm] bg-white shadow-lg p-6 border border-black text-[13px] leading-normal">
           <div className="flex flex-col gap-3.5 h-full"> {/* ✅ gap-3 → gap-3.5 */}
             {/* 기본 정보 */}
             <div className="flex">
@@ -331,6 +406,7 @@ export default function ResumeResult() {
             </div>
           </div>
         </main>
+        
 
         {/* 2페이지 - 자기소개서 (동일) */}
         <main className="w-[210mm] h-[297mm] bg-white border border-black shadow-lg p-6 text-[13px] leading-normal">
@@ -377,17 +453,88 @@ export default function ResumeResult() {
             </div>
           </div>
         </main>
+
+          </>
+        );
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full border-4 border-green-500 border-t-transparent h-12 w-12 mx-auto mb-4" />
+          <p>이력서를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!resumeData) {
+    return <div>이력서 데이터가 없습니다.</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white to-green-100 font-sans">
+      <Header />
+
+      <section
+        className="relative text-center py-28 px-4 bg-center bg-no-repeat"
+        style={{
+          backgroundImage: "url('/images/PFbanner.png')",
+          backgroundSize: 'cover',
+          minHeight: '300px',
+        }}
+      >
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          분석 완료! 이력서가 완성됐어요 🎉
+        </h2>
+        <p className="text-white text-lg">
+          지금 PFO AI가 생성한 이력서를 확인해보세요
+        </p>
+      </section>
+
+      <div className="text-center text-sm text-gray-700 italic mt-20 mb-12">
+        PFO AI가 <span className="font-semibold text-green-700">{resumeData.personal?.name || '사용자'}</span> 님의 입력 정보를 바탕으로,
+        <br />
+        <span className="font-semibold">간결하고 깔끔한 이력서</span>를 원하시는 스타일에 맞춰 작성해보았어요 😊
       </div>
 
-        
+      {/* 템플릿 선택 */}
+      <div className="max-w-7xl mx-auto mt-10 px-4 flex justify-end">
+        <select
+          className="border px-3 py-1 rounded"
+          value={template}
+          onChange={(e) => setTemplate(e.target.value as 'default' | 'modern')}
+        >
+          <option value="default">기본 템플릿</option>
+          <option value="modern">모던 템플릿</option>
+        </select>
+      </div>
+
+      {/* ✅ 템플릿 표시 */}
+      <div className="flex justify-center flex-wrap gap-6 my-10 px-4">
+        {renderTemplate()}
+      </div>
+
       {/* 버튼 영역 */}
       <div className="flex justify-center gap-4 mb-10">
-        <button 
+        <button
           onClick={() => navigate(`/resume/edit/${resumeId}`)}
           className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition-all"
         >
           수정하기
         </button>
+          <button
+    className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-all"
+  >
+    다운로드
+  </button>
+    <button
+    className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition-all"
+  >
+    삭제하기
+  </button>
       </div>
 
       <Footer />
