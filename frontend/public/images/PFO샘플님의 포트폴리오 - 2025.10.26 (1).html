@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PFO샘플 - 포트폴리오</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #b4b4b4;
+            --text-muted: #666666;
+            --accent-primary: #00d4ff;
+            --accent-secondary: #ff6b35;
+            --accent-tertiary: #7c3aed;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-tertiary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --border-color: #333333;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* 네비게이션 - 세로형 사이드바 */
+        .nav-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-item {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--accent-primary);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: var(--bg-tertiary);
+            color: var(--accent-primary);
+        }
+
+        .nav-tooltip {
+            position: absolute;
+            left: 70px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-item:hover .nav-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 메인 컨텐츠 */
+        .main-content {
+            margin-left: 80px;
+            min-height: 100vh;
+        }
+
+        /* Hero Section - 독창적인 분할 레이아웃 */
+        .hero {
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero-left {
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 4rem;
+            position: relative;
+        }
+
+        .hero-right {
+            background: var(--bg-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        .hero-title .gradient-text {
+            background: var(--gradient-tertiary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .hero-description {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+            line-height: 1.7;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            padding: 1rem 2rem;
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: translateY(-3px);
+        }
+
+        /* 우측 코드 애니메이션 */
+        .code-animation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 60%;
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            font-family: 'Fira Code', monospace;
+            overflow: hidden;
+        }
+
+        .code-line {
+            margin-bottom: 0.8rem;
+            opacity: 0;
+            animation: typewriter 0.5s ease forwards;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .code-line:nth-child(1) { animation-delay: 0.5s; }
+        .code-line:nth-child(2) { animation-delay: 1s; }
+        .code-line:nth-child(3) { animation-delay: 1.5s; }
+        .code-line:nth-child(4) { animation-delay: 2s; }
+        .code-line:nth-child(5) { animation-delay: 2.5s; }
+
+        @keyframes typewriter {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .syntax-keyword { color: #ff79c6; }
+        .syntax-string { color: #f1fa8c; }
+        .syntax-comment { color: #6272a4; }
+        .syntax-function { color: #8be9fd; }
+
+        /* About Section - 카드 겹침 레이아웃 */
+        .about {
+            padding: 8rem 0;
+            background: var(--bg-secondary);
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-cards {
+            position: relative;
+            height: 400px;
+        }
+
+        .about-card {
+            position: absolute;
+            width: 300px;
+            height: 200px;
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .about-card:nth-child(1) {
+            top: 0;
+            left: 0;
+            z-index: 3;
+            background: var(--gradient-primary);
+        }
+
+        .about-card:nth-child(2) {
+            top: 50px;
+            left: 50px;
+            z-index: 2;
+            background: var(--gradient-secondary);
+        }
+
+        .about-card:nth-child(3) {
+            top: 100px;
+            left: 100px;
+            z-index: 1;
+            background: var(--gradient-tertiary);
+        }
+
+        .about-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            z-index: 4;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .about-content h3 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-tertiary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .about-text {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Projects Section - 독창적인 원형 레이아웃 */
+        .projects {
+            padding: 8rem 0;
+            background: var(--bg-primary);
+        }
+
+        .projects-container {
+            position: relative;
+            height: 600px;
+            margin: 4rem auto;
+        }
+
+        .project-card {
+            position: absolute;
+            width: 350px;
+            height: 400px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .project-card:hover {
+            transform: translateY(-20px) scale(1.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .project-card:nth-child(1) {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+        }
+
+        .project-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .project-role {
+            color: var(--accent-primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .project-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-period {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tech-tag {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .tech-tag.react { background: #61dafb20; color: #61dafb; border-color: #61dafb; }
+        .tech-tag.java { background: #f8981d20; color: #f8981d; border-color: #f8981d; }
+        .tech-tag.cpp { background: #00599c20; color: #00599c; border-color: #00599c; }
+
+        .project-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .project-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Skills Section - 원형 프로그레스 바 */
+        .skills {
+            padding: 8rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+
+        .skill-category {
+            background: var(--bg-primary);
+            padding: 2.5rem 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .skill-category:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-primary);
+        }
+
+        .skill-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .skill-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .skill-list {
+            list-style: none;
+        }
+
+        .skill-list li {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .skill-list li::before {
+            content: '•';
+            color: var(--accent-primary);
+            margin-right: 0.5rem;
+        }
+
+        /* Contact Section - 독창적인 글리치 효과 */
+        .contact {
+            padding: 8rem 0;
+            background: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(0, 212, 255, 0.03) 50%,
+                transparent 70%
+            );
+            animation: sweep 10s infinite linear;
+        }
+
+        @keyframes sweep {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .contact-content {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .contact-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--gradient-tertiary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .contact-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .contact-item {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .contact-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .contact-item i {
+            font-size: 2rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .contact-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-item p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            padding: 2rem 0;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            margin-left: -80px;
+        }
+
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 1024px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-right {
+                display: none;
+            }
+            
+            .hero-left {
+                text-align: center;
+                padding: 2rem;
+            }
+            
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .about-cards {
+                order: 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-sidebar {
+                width: 100%;
+                height: 60px;
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 0 1rem;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                margin-top: 60px;
+            }
+            
+            .nav-items {
+                flex-direction: row;
+                gap: 1rem;
+                flex: none;
+                justify-content: center;
+            }
+            
+            .nav-tooltip {
+                display: none;
+            }
+            
+            .hero {
+                height: 80vh;
+                padding-top: 2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .about-cards {
+                height: 300px;
+            }
+            
+            .about-card {
+                width: 250px;
+                height: 150px;
+                padding: 1.5rem;
+            }
+            
+            .projects-container {
+                height: auto;
+            }
+            
+            .project-card {
+                position: relative;
+                width: 100%;
+                height: auto;
+                margin-bottom: 2rem;
+            }
+            
+            .skills-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 애니메이션 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        /* 스크롤 인디케이터 */
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 80px;
+            width: calc(100% - 80px);
+            height: 3px;
+            background: var(--bg-secondary);
+            z-index: 1001;
+        }
+
+        .scroll-progress {
+            height: 100%;
+            background: var(--gradient-primary);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        /* 로딩 애니메이션 */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 로딩 화면 -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 스크롤 인디케이터 -->
+    <div class="scroll-indicator">
+        <div class="scroll-progress" id="scrollProgress"></div>
+    </div>
+
+    <!-- 네비게이션 사이드바 -->
+    <nav class="nav-sidebar">
+        <div class="nav-logo">P</div>
+        <div class="nav-items">
+            <a href="#home" class="nav-item active" data-section="home">
+                <i class="fas fa-home"></i>
+                <div class="nav-tooltip">홈</div>
+            </a>
+            <a href="#about" class="nav-item" data-section="about">
+                <i class="fas fa-user"></i>
+                <div class="nav-tooltip">소개</div>
+            </a>
+            <a href="#projects" class="nav-item" data-section="projects">
+                <i class="fas fa-code"></i>
+                <div class="nav-tooltip">프로젝트</div>
+            </a>
+            <a href="#skills" class="nav-item" data-section="skills">
+                <i class="fas fa-cogs"></i>
+                <div class="nav-tooltip">기술</div>
+            </a>
+            <a href="#contact" class="nav-item" data-section="contact">
+                <i class="fas fa-envelope"></i>
+                <div class="nav-tooltip">연락처</div>
+            </a>
+        </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-left">
+                <h1 class="hero-title">
+                    안녕하세요,<br>
+                    <span class="gradient-text">PFO샘플</span>입니다
+                </h1>
+                <p class="hero-subtitle">백엔드・프론트엔드・풀스택 개발자</p>
+                <p class="hero-description">
+                    문제 해결에 열정을 가진 개발자로, 웹 개발부터 AI/머신러닝, 클라우드까지 
+                    다양한 기술 스택을 다루며 끊임없이 성장하고 있습니다.
+                </p>
+                <div class="hero-cta">
+                    <a href="#projects" class="btn-primary">프로젝트 보기</a>
+                    <a href="#contact" class="btn-secondary">연락하기</a>
+                </div>
+            </div>
+            <div class="hero-right">
+                <div class="code-animation">
+                    <div class="code-line">
+                        <span class="syntax-keyword">class</span> 
+                        <span class="syntax-function">Developer</span> {
+                    </div>
+                    <div class="code-line">
+                        &nbsp;&nbsp;<span class="syntax-keyword">constructor</span>() {
+                    </div>
+                    <div class="code-line">
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-keyword">this</span>.name = <span class="syntax-string">"PFO샘플"</span>;
+                    </div>
+                    <div class="code-line">
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-keyword">this</span>.passion = <span class="syntax-string">"problem_solving"</span>;
+                    </div>
+                    <div class="code-line">
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-comment">// 끊임없는 학습과 성장</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about">
+            <div class="container">
+                <h2 class="section-title">About Me</h2>
+                <div class="about-grid">
+                    <div class="about-cards">
+                        <div class="about-card">
+                            <div class="card-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h4 class="card-title">문제 해결</h4>
+                            <p class="card-text">복잡한 문제를 논리적으로 분석하고 창의적인 해결책을 찾습니다.</p>
+                        </div>
+                        <div class="about-card">
+                            <div class="card-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h4 class="card-title">팀워크</h4>
+                            <p class="card-text">효과적인 협업을 통해 시너지를 창출하고 함께 성장합니다.</p>
+                        </div>
+                        <div class="about-card">
+                            <div class="card-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h4 class="card-title">책임감</h4>
+                            <p class="card-text">맡은 일에 대한 확실한 책임감으로 신뢰받는 개발자입니다.</p>
+                        </div>
+                    </div>
+                    <div class="about-content">
+                        <h3>기술로 세상을 변화시키는 개발자</h3>
+                        <p class="about-text">
+                            순천대학교에서 컴퓨터공학을 전공하며, 웹 개발부터 AI/머신러닝, 클라우드 인프라까지 
+                            폭넓은 기술 스택을 학습하고 있습니다. 단순한 코딩을 넘어서 사용자의 문제를 해결하고 
+                            가치를 창출하는 것에 관심이 많습니다.
+                        </p>
+                        <p class="about-text">
+                            앞으로 기술 전문가로 성장하여 기술 블로그를 통해 지식을 공유하고, 
+                            문제 해결형 개발자로서 사회에 기여하고 싶습니다.
+                        </p>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-number">4년차</div>
+                                <div class="stat-label">대학 재학</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">2+</div>
+                                <div class="stat-label">자격증</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">다양한</div>
+                                <div class="stat-label">프로젝트</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">성장</div>
+                                <div class="stat-label">목표</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="projects">
+            <div class="container">
+                <h2 class="section-title">Featured Projects</h2>
+                <div class="projects-container">
+                    <div class="project-card">
+                        <div class="project-header">
+                            <div class="project-icon">
+                                <i class="fas fa-code-branch"></i>
+                            </div>
+                            <div>
+                                <h3 class="project-title">branches 샘플</h3>
+                                <p class="project-role">프론트엔드 개발자</p>
+                            </div>
+                        </div>
+                        <p class="project-description">
+                            branches 샘플을 위한 설명입니다. 사용자 경험을 중시한 인터페이스 설계와 
+                            효율적인 개발 프로세스를 통해 완성된 프로젝트입니다.
+                        </p>
+                        <p class="project-period">
+                            <i class="fas fa-calendar"></i> 2025.3.1 ~ 10.26
+                        </p>
+                        <div class="tech-stack">
+                            <span class="tech-tag react">React</span>
+                            <span class="tech-tag java">Java</span>
+                            <span class="tech-tag cpp">C++</span>
+                        </div>
+                        <a href="https://github.com/Hyeonseo1021/BranchesPFO" target="_blank" class="project-link">
+                            <i class="fab fa-github"></i>
+                            GitHub 보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="skills">
+            <div class="container">
+                <h2 class="section-title">Skills & Tools</h2>
+                <div class="skills-grid">
+                    <div class="skill-category">
+                        <div class="skill-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3 class="skill-title">개발 언어</h3>
+                        <ul class="skill-list">
+                            <li>React</li>
+                            <li>Java</li>
+                            <li>C++</li>
+                        </ul>
+                    </div>
+                    <div class="skill-category">
+                        <div class="skill-icon">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h3 class="skill-title">개발 도구</h3>
+                        <ul class="skill-list">
+                            <li>GitHub</li>
+                            <li>Figma</li>
+                            <li>Notion</li>
+                        </ul>
+                    </div>
+                    <div class="skill-category">
+                        <div class="skill-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="skill-title">관심 분야</h3>
+                        <ul class="skill-list">
+                            <li>웹 개발</li>
+                            <li>AI/머신러닝</li>
+                            <li>클라우드/인프라</li>
+                            <li>모바일 앱</li>
+                        </ul>
+                    </div>
+                    <div class="skill-category">
+                        <div class="skill-icon">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <h3 class="skill-title">자격증</h3>
+                        <ul class="skill-list">
+                            <li>정보처리기사</li>
+                            <li>컴퓨터활용능력</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact">
+            <div class="container">
+                <div class="contact-content">
+                    <h2 class="contact-title">Let's Work Together</h2>
+                    <p class="contact-subtitle">
+                        새로운 프로젝트나 협업 기회가 있으시다면 언제든 연락해 주세요!
+                    </p>
+                    <div class="contact-grid">
+                        <a href="mailto:skdus0927@naver.com" class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <h4>이메일</h4>
+                            <p>skdus0927@naver.com</p>
+                        </a>
+                        <a href="tel:010-1234-5321" class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <h4>전화번호</h4>
+                            <p>010-1234-5321</p>
+                        </a>
+                        <div class="contact-item">
+                            <i class="fas fa-university"></i>
+                            <h4>학력</h4>
+                            <p>순천대학교 4학년 재학중</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">© 2024 PFO샘플. 모든 권리 보유.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 로딩 애니메이션
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hide');
+            }, 1500);
+        });
+
+        // 스크롤 진행률
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset;
+            const docHeight = document.body.offsetHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            document.getElementById('scrollProgress').style.width = scrollPercent + '%';
+        });
+
+        // 네비게이션 활성화
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section');
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-section') === current) {
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // 부드러운 스크롤
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 스크롤 애니메이션
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        // 애니메이션 대상 요소들 관찰
+        document.querySelectorAll('.about-card, .project-card, .skill-category, .contact-item').forEach(el => {
+            observer.observe(el);
+        });
+
+        // 프로젝트 카드 3D 효과
+        document.querySelectorAll('.project-card').forEach(card => {
+            card.addEventListener('mousemove', function(e) {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 10;
+                const rotateY = (centerX - x) / 10;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-20px) scale(1.1)`;
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)';
+            });
+        });
+
+        // About 카드 인터랙션
+        document.querySelectorAll('.about-card').forEach((card, index) => {
+            card.addEventListener('mouseenter', function() {
+                // 다른 카드들을 뒤로 이동
+                document.querySelectorAll('.about-card').forEach((otherCard, otherIndex) => {
+                    if (otherIndex !== index) {
+                        otherCard.style.transform = 'translateY(20px) scale(0.95)';
+                        otherCard.style.opacity = '0.7';
+                    }
+                });
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                // 모든 카드를 원래 위치로
+                document.querySelectorAll('.about-card').forEach(otherCard => {
+                    otherCard.style.transform = '';
+                    otherCard.style.opacity = '';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

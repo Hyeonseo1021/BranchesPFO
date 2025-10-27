@@ -305,21 +305,44 @@ export default function ProfilePage() {
               💼 희망 직무/포지션
               <span className="text-xs text-gray-500">({selectedKeywords.positions.length}/최소 3개)</span>
             </h4>
-            <div className="flex flex-wrap gap-2">
-              {KEYWORD_OPTIONS.positions.map(keyword => (
-                <button
-                  key={keyword}
-                  onClick={() => toggleKeyword('positions', keyword)}
-                  className={`px-3 py-2 rounded text-sm transition-colors ${
-                    selectedKeywords.positions.includes(keyword)
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {keyword}
-                </button>
-              ))}
-            </div>
+<div className="flex flex-wrap gap-2">
+  {[
+    ...KEYWORD_OPTIONS.positions,
+    // ✅ 기존 리스트에 없는 사용자 입력 키워드만 추가로 표시
+    ...selectedKeywords.positions.filter(k => !KEYWORD_OPTIONS.positions.includes(k))
+  ].map(keyword => (
+    <button
+      key={keyword}
+      onClick={() => toggleKeyword('positions', keyword)}
+      className={`px-3 py-2 rounded text-sm transition-colors ${
+        selectedKeywords.positions.includes(keyword)
+          ? 'bg-blue-600 text-white'
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+      }`}
+    >
+      {keyword}
+    </button>
+  ))}
+
+ {/* ✅ 기타 버튼 */}
+  <button
+    onClick={() => {
+      const custom = prompt('직접 입력할 키워드를 적어주세요.');
+      if (custom && custom.trim() !== '') {
+        setSelectedKeywords(prev => {
+          if (prev.positions.includes(custom.trim())) return prev;
+          return {
+            ...prev,
+            positions: [...prev.positions, custom.trim()]
+          };
+        });
+      }
+    }}
+    className="px-3 py-2 rounded text-sm bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+  >
+    + 기타
+  </button>
+</div>
           </div>
 
           {/* 2. 나의 강점 */}
@@ -329,21 +352,46 @@ export default function ProfilePage() {
               <span className="text-xs text-gray-500">({selectedKeywords.strengths.length}/최소 3개)</span>
             </h4>
             <div className="flex flex-wrap gap-2">
-              {KEYWORD_OPTIONS.strengths.map(keyword => (
-                <button
-                  key={keyword}
-                  onClick={() => toggleKeyword('strengths', keyword)}
-                  className={`px-3 py-2 rounded text-sm transition-colors ${
-                    selectedKeywords.strengths.includes(keyword)
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {keyword}
-                </button>
-              ))}
-            </div>
-          </div>
+    {[
+      ...KEYWORD_OPTIONS.strengths,
+      // ✅ 기존 리스트에 없는 사용자 입력 키워드도 함께 렌더링
+      ...selectedKeywords.strengths.filter(
+        (k) => !KEYWORD_OPTIONS.strengths.includes(k)
+      ),
+    ].map((keyword) => (
+      <button
+        key={keyword}
+        onClick={() => toggleKeyword('strengths', keyword)}
+        className={`px-3 py-2 rounded text-sm transition-colors ${
+          selectedKeywords.strengths.includes(keyword)
+            ? 'bg-green-600 text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+        }`}
+      >
+        {keyword}
+      </button>
+    ))}
+
+    {/* ✅ 기타 버튼 */}
+    <button
+      onClick={() => {
+        const custom = prompt('직접 입력할 강점을 적어주세요.');
+        if (custom && custom.trim() !== '') {
+          setSelectedKeywords((prev) => {
+            if (prev.strengths.includes(custom.trim())) return prev;
+            return {
+              ...prev,
+              strengths: [...prev.strengths, custom.trim()],
+            };
+          });
+        }
+      }}
+      className="px-3 py-2 rounded text-sm bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+    >
+      + 기타
+    </button>
+  </div>
+</div>
 
           {/* 3. 관심 기술/분야 */}
           <div className="mb-6">
@@ -352,21 +400,46 @@ export default function ProfilePage() {
               <span className="text-xs text-gray-500">({selectedKeywords.interests.length}/최소 3개)</span>
             </h4>
             <div className="flex flex-wrap gap-2">
-              {KEYWORD_OPTIONS.interests.map(keyword => (
-                <button
-                  key={keyword}
-                  onClick={() => toggleKeyword('interests', keyword)}
-                  className={`px-3 py-2 rounded text-sm transition-colors ${
-                    selectedKeywords.interests.includes(keyword)
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {keyword}
-                </button>
-              ))}
-            </div>
-          </div>
+    {[
+      ...KEYWORD_OPTIONS.interests,
+      // ✅ 기존 리스트에 없는 사용자 입력 키워드도 함께 렌더링
+      ...selectedKeywords.interests.filter(
+        (k) => !KEYWORD_OPTIONS.interests.includes(k)
+      ),
+    ].map((keyword) => (
+      <button
+        key={keyword}
+        onClick={() => toggleKeyword('interests', keyword)}
+        className={`px-3 py-2 rounded text-sm transition-colors ${
+          selectedKeywords.interests.includes(keyword)
+            ? 'bg-purple-600 text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+        }`}
+      >
+        {keyword}
+      </button>
+    ))}
+
+    {/* ✅ 기타 버튼 */}
+    <button
+      onClick={() => {
+        const custom = prompt('직접 입력할 관심 기술 또는 분야를 적어주세요.');
+        if (custom && custom.trim() !== '') {
+          setSelectedKeywords((prev) => {
+            if (prev.interests.includes(custom.trim())) return prev;
+            return {
+              ...prev,
+              interests: [...prev.interests, custom.trim()],
+            };
+          });
+        }
+      }}
+      className="px-3 py-2 rounded text-sm bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+    >
+      + 기타
+    </button>
+  </div>
+</div>
 
           {/* 4. 목표/지향점 */}
           <div className="mb-6">
@@ -375,21 +448,46 @@ export default function ProfilePage() {
               <span className="text-xs text-gray-500">({selectedKeywords.goals.length}/최소 3개)</span>
             </h4>
             <div className="flex flex-wrap gap-2">
-              {KEYWORD_OPTIONS.goals.map(keyword => (
-                <button
-                  key={keyword}
-                  onClick={() => toggleKeyword('goals', keyword)}
-                  className={`px-3 py-2 rounded text-sm transition-colors ${
-                    selectedKeywords.goals.includes(keyword)
-                      ? 'bg-orange-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {keyword}
-                </button>
-              ))}
-            </div>
-          </div>
+    {[
+      ...KEYWORD_OPTIONS.goals,
+      // ✅ 기존 리스트에 없는 사용자 입력 키워드도 함께 렌더링
+      ...selectedKeywords.goals.filter(
+        (k) => !KEYWORD_OPTIONS.goals.includes(k)
+      ),
+    ].map((keyword) => (
+      <button
+        key={keyword}
+        onClick={() => toggleKeyword('goals', keyword)}
+        className={`px-3 py-2 rounded text-sm transition-colors ${
+          selectedKeywords.goals.includes(keyword)
+            ? 'bg-orange-600 text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+        }`}
+      >
+        {keyword}
+      </button>
+    ))}
+
+    {/* ✅ 기타 버튼 */}
+    <button
+      onClick={() => {
+        const custom = prompt('직접 입력할 목표 또는 지향점을 적어주세요.');
+        if (custom && custom.trim() !== '') {
+          setSelectedKeywords((prev) => {
+            if (prev.goals.includes(custom.trim())) return prev;
+            return {
+              ...prev,
+              goals: [...prev.goals, custom.trim()],
+            };
+          });
+        }
+      }}
+      className="px-3 py-2 rounded text-sm bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+    >
+      + 기타
+    </button>
+  </div>
+</div>
         </section>
 
         {/* 학력 */}

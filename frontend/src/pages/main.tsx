@@ -6,7 +6,7 @@ import '../css/main.css';
 export default function MainPage() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<number | null>(null);
-  
+  const [showMore, setShowMore] = useState(false);
   const items = [
     {
       icon: '💡',
@@ -101,52 +101,152 @@ export default function MainPage() {
 
             {/* Service Section */}
             <section className="py-16 bg-gray-50">
-                <div className="max-w-6xl mx-auto px-4 text-center">
-                    <h2 className="text-2xl font-semibold mb-6">주요 기능</h2>
-                    <p className="mb-10 text-gray-600">PFO의 다양한 기능들을 미리 만나보세요!</p>
-                    <div className="grid grid-cols-3 gap-6">
-                        <div className="bg-white p-4 rounded shadow hover:shadow-md transition">📋 이력서 관리</div>
-                        <div
-  className="bg-white p-4 rounded shadow hover:shadow-md transition cursor-pointer"
-  onClick={() => navigate('/community')}
->
-  📌 커뮤니티
-</div>
-                        <div className="bg-white p-4 rounded shadow hover:shadow-md transition">🎓 자격증 등록</div>
-                        <div className="bg-white p-4 rounded shadow hover:shadow-md transition">🌍 맞춤형 추천</div>
-                        <div className="bg-white p-4 rounded shadow hover:shadow-md transition">💬 모바일 공유</div>
-                        <div className="bg-white p-4 rounded shadow hover:shadow-md transition">🔒 자동저장</div>
-                    </div>
-                </div>
-            </section>
-
-            {/* 포트폴리오 미리보기 Section */}
-<section className="py-16 bg-white">
   <div className="max-w-6xl mx-auto px-4 text-center">
-    <h2 className="text-2xl font-bold mb-6">포트폴리오 미리보기</h2>
-    <p className="text-gray-600 mb-8">
-      Branches PFO에서 제공하는 다양한 스타일의 AI 포트폴리오 예시를 미리 확인해보세요.
-    </p>
+    <h2 className="text-2xl font-semibold mb-6">주요 기능</h2>
+    <p className="mb-10 text-gray-600">PFO의 다양한 기능들을 미리 만나보세요!</p>
     <div className="grid grid-cols-3 gap-6">
+
+      {/* ✅ 이력서 관리 → /mypage/resumes */}
+      <div
+        className="bg-white p-4 rounded shadow hover:shadow-md transition cursor-pointer"
+        onClick={() => navigate('/mypage/resumes')}
+      >
+        📋 이력서 관리
+      </div>
+
+      {/* ✅ 커뮤니티 (유지) */}
+      <div
+        className="bg-white p-4 rounded shadow hover:shadow-md transition cursor-pointer"
+        onClick={() => navigate('/community')}
+      >
+        📌 커뮤니티
+      </div>
+
+      {/* ✅ 자격증 등록 → AI 도우미로 변경 + /aichatbot */}
+      <div
+        className="bg-white p-4 rounded shadow hover:shadow-md transition cursor-pointer"
+        onClick={() => navigate('/aichatbot')}
+      >
+        🤖 AI 도우미
+      </div>
+
+      {/* ✅ 맞춤형 추천 → 취업 정보 추천 + /jobrecommend */}
+      <div
+        className="bg-white p-4 rounded shadow hover:shadow-md transition cursor-pointer"
+        onClick={() => navigate('/jobrecommend')}
+      >
+        🌍 취업 정보 추천
+      </div>
+
+      {/* ✅ 모바일 공유 → 내 정보 보러가기 + /Mypage */}
+      <div
+        className="bg-white p-4 rounded shadow hover:shadow-md transition cursor-pointer"
+        onClick={() => navigate('/Mypage')}
+      >
+        💬 내 정보 보러가기
+      </div>
+
+      {/* ✅ 자동저장 → 포트폴리오 관리 + /mypage/portfolios */}
+      <div
+        className="bg-white p-4 rounded shadow hover:shadow-md transition cursor-pointer"
+        onClick={() => navigate('/mypage/portfolios')}
+      >
+        🔒 포트폴리오 관리
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+{/* 포트폴리오 미리보기 Section */}
+    <section className="py-16 bg-white">
+      <div className="max-w-6xl mx-auto px-4 text-center">
+        <h2 className="text-2xl font-bold mb-6">포트폴리오 미리보기</h2>
+        <p className="text-gray-600 mb-8">
+          Branches PFO에서 제공하는 다양한 스타일의 AI 포트폴리오 예시를 미리 확인해보세요.
+        </p>
+
+        {/* ✅ 첫 번째 sample1 세 개 */}
+{/* ✅ 첫 번째 sample1 세 개 */}
+<div className="grid grid-cols-3 gap-6">
   {[1, 2, 3].map((i) => (
     <div
-      key={i}
-      className="h-48 bg-gray-100 rounded overflow-hidden shadow hover:shadow-md transition"
+      key={`sample1-${i}`}
+      className="h-48 bg-gray-100 rounded overflow-hidden shadow hover:shadow-lg transition cursor-pointer transform hover:scale-[1.02]"
+      onClick={() =>
+        window.open(
+          '/images/PFO샘플님의 포트폴리오 - 2025.10.26.html',
+          '_blank'
+        )
+      }
     >
       <img
-        src="/images/resumeResult.jpg"
-        alt={`Resume Template ${i}`}
+        src={`/images/sample1.png`}
+        alt={`Portfolio Sample ${i}`}
         className="w-full h-full object-cover"
       />
     </div>
   ))}
 </div>
 
-    <button className="mt-10 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
-      전체 템플릿 보기
-    </button>
-  </div>
-</section>
+{/* ✅ 더보기 클릭 시 sample2 세 개 + sample3 세 개 표시 */}
+{showMore && (
+  <>
+    <div className="grid grid-cols-3 gap-6 mt-6">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={`sample2-${i}`}
+          className="h-48 bg-gray-100 rounded overflow-hidden shadow hover:shadow-lg transition cursor-pointer transform hover:scale-[1.02]"
+          onClick={() =>
+            window.open(
+              '/images/PFO샘플님의 포트폴리오 - 2025.10.26 (1).html',
+              '_blank'
+            )
+          }
+        >
+          <img
+            src={`/images/sample2.png`}
+            alt={`Portfolio Sample 2 - ${i}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ))}
+    </div>
+
+    {/* ✅ sample3 세 개 추가 */}
+    <div className="grid grid-cols-3 gap-6 mt-6">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={`sample3-${i}`}
+          className="h-48 bg-gray-100 rounded overflow-hidden shadow hover:shadow-lg transition cursor-pointer transform hover:scale-[1.02]"
+          onClick={() =>
+            window.open(
+              '/images/PFO샘플님의 포트폴리오 - 2025.10.26 (2).html',
+              '_blank'
+            )
+          }
+        >
+          <img
+            src={`/images/sample3.png`}
+            alt={`Portfolio Sample 3 - ${i}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ))}
+    </div>
+  </>
+)}
+
+        {/* ✅ 버튼 (토글형) */}
+        <button
+          className="mt-10 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+          onClick={() => setShowMore((prev) => !prev)}
+        >
+          {showMore ? '접기 ▲' : '다른 작품 더보기 ▼'}
+        </button>
+      </div>
+    </section>
 
 
             <Footer />

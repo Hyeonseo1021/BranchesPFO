@@ -116,10 +116,21 @@ export default function CmDetail() {
         <h2 className="text-2xl font-bold mb-4 border-b pb-2">{post.title}</h2>
 
         {/* 작성자 + 날짜 */}
-        <div className="flex justify-between text-sm text-gray-500 mb-6">
-          <span>글쓴이: {post.author?.nickname || '익명'}</span>
-          <span>작성일자: {new Date(post.createdAt).toLocaleDateString()}</span>
-        </div>
+<div className="flex justify-between items-center text-sm text-gray-500 mb-6">
+  <div>
+    <span>글쓴이: {post.author?.nickname || '익명'}</span>
+    <span className="ml-4">작성일자: {new Date(post.createdAt).toLocaleDateString()}</span>
+  </div>
+
+  {/* 삭제 버튼 (연동은 아직 없음) */}
+  <button
+    onClick={() => alert('삭제 기능은 추후 백엔드 연동 예정입니다.')}
+    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+  >
+    삭제
+  </button>
+</div>
+
 
         {/* 본문 */}
         <div className="text-base text-gray-700 leading-relaxed mb-10">{post.content}</div>
@@ -127,21 +138,34 @@ export default function CmDetail() {
         {/* 댓글 리스트 */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-4">댓글</h3>
-          <ul className="space-y-3">
-            {comments.length === 0 ? (
-              <p className="text-sm text-gray-400">아직 댓글이 없습니다.</p>
-            ) : (
-              comments.map((comment) => (
-                <li key={comment._id} className="border-b pb-2">
-                  <p className="text-sm text-gray-700">{comment.content}</p>
-                  <p className="text-xs text-gray-400">
-                    작성자: {comment.author?.nickname || '익명'} |{' '}
-                    {new Date(comment.createdAt).toLocaleDateString()}
-                  </p>
-                </li>
-              ))
-            )}
-          </ul>
+<ul className="space-y-3">
+  {comments.length === 0 ? (
+    <p className="text-sm text-gray-400">아직 댓글이 없습니다.</p>
+  ) : (
+    comments.map((comment) => (
+      <li key={comment._id} className="border-b pb-2">
+        <div className="flex justify-between items-start">
+          {/* 댓글 내용 */}
+          <p className="text-sm text-gray-700">{comment.content}</p>
+
+          {/* 삭제 버튼 (연동은 아직 없음) */}
+          <button
+            onClick={() => alert('댓글 삭제 기능은 추후 백엔드 연동 예정입니다.')}
+            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs ml-2"
+          >
+            삭제
+          </button>
+        </div>
+
+        <p className="text-xs text-gray-400 mt-1">
+          작성자: {comment.author?.nickname || '익명'} |{' '}
+          {new Date(comment.createdAt).toLocaleDateString()}
+        </p>
+      </li>
+    ))
+  )}
+</ul>
+
         </div>
 
         {/* 댓글 입력창 */}
