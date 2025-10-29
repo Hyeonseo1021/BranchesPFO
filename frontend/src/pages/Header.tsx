@@ -42,16 +42,16 @@ export default function Header() {
       </div>
 
       <nav className="space-x-4 text-sm">
-        <a onClick={() => handleProtectedNavigation('/community')} className="hover:underline cursor-pointer">커뮤니티</a>
-        <a onClick={() => handleProtectedNavigation('/aichatbot')} className="hover:underline cursor-pointer">AI도우미</a>
-        <a onClick={() => handleProtectedNavigation('/aipfopage')} className="hover:underline cursor-pointer">이력서/포트폴리오 생성</a>
-        <a onClick={() => handleProtectedNavigation('/jobrecommend')} className="hover:underline cursor-pointer">취업 정보 추천</a>
-        <a onClick={() => handleProtectedNavigation('/mypage')} className="hover:underline cursor-pointer">MyPage</a>
-        
+        <button onClick={() => handleProtectedNavigation('/community')} className="hover:underline cursor-pointer">커뮤니티</button>
+        <button onClick={() => handleProtectedNavigation('/aichatbot')} className="hover:underline cursor-pointer">AI도우미</button>
+        <button onClick={() => handleProtectedNavigation('/aipfopage')} className="hover:underline cursor-pointer">이력서/포트폴리오 생성</button>
+        <button onClick={() => handleProtectedNavigation('/jobrecommend')} className="hover:underline cursor-pointer">취업 정보 추천</button>
+        <button onClick={() => handleProtectedNavigation('/mypage')} className="hover:underline cursor-pointer">MyPage</button>
+
         {isLoggedIn ? (
-          <a onClick={handleLogout} className="hover:underline cursor-pointer text-red-600">로그아웃</a>
+          <button onClick={handleLogout} className="hover:underline cursor-pointer text-red-600">로그아웃</button>
         ) : (
-          <a onClick={() => navigate('/login')} className="hover:underline cursor-pointer text-blue-600">로그인</a>
+          <button onClick={() => navigate('/login')} className="hover:underline cursor-pointer text-blue-600">로그인</button>
         )}
       </nav>
     </header>

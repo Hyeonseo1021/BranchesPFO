@@ -801,7 +801,6 @@ export default function ProfilePage() {
           <h3 className="text-lg font-semibold mb-4">프로젝트 경험</h3>
           {projects.map((item, idx) => {
             const [title = '', description = '', role = '', techStackStr = '', period = '', link = ''] = item.split('||');
-            const techStack = techStackStr ? techStackStr.split(',') : [];
             
             const updateProject = (field: number, value: string) => {
               const fields = item.split('||');

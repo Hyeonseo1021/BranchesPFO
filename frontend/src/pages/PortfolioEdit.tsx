@@ -8,8 +8,7 @@ import axiosInstance from '../api/axios';
 export default function PortfolioEdit() {
   const { portfolioId } = useParams<{ portfolioId: string }>();
   const navigate = useNavigate();
-  
-  const [portfolio, setPortfolio] = useState<any>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [editedContent, setEditedContent] = useState('');
 
@@ -20,7 +19,6 @@ export default function PortfolioEdit() {
         setIsLoading(true);
         const response = await axiosInstance.get(`/portfolio/${portfolioId}`);
         const data = response.data.portfolio;
-        setPortfolio(data);
         setEditedContent(data.generatedContent || '');
       } catch (error) {
         console.error('포트폴리오 조회 실패:', error);

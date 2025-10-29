@@ -7,28 +7,39 @@ import { COOKIE_NAME } from "../utils/Constants";
 
 export const userSignUp = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log("📝 회원가입 요청 받음:", { nickname: req.body.nickname, email: req.body.email });
+
     const { nickname, email, password } = req.body;
 
     if (!nickname || !email || !password) {
+      console.log("❌ 필드 누락");
       res.status(400).json({ message: "모든 필드를 입력하세요." });
       return;
     }
 
+    console.log("🔍 중복 체크 중...");
     const [dupNickname, dupEmail] = await Promise.all([
       User.findOne({ nickname }).lean(),
       User.findOne({ email }).lean(),
     ]);
+
     if (dupNickname) {
+      console.log("❌ 중복 닉네임:", nickname);
       res.status(409).json({ message: "이미 사용 중인 닉네임입니다." });
       return;
     }
     if (dupEmail) {
+      console.log("❌ 중복 이메일:", email);
       res.status(409).json({ message: "이미 등록된 이메일입니다." });
       return;
     }
 
+    console.log("🔐 비밀번호 해싱 중...");
     const hashed = await hash(password, 10);
+
+    console.log("💾 사용자 생성 중...");
     const user = await User.create({ nickname, email, password: hashed });
+    console.log("✅ 사용자 생성 성공:", user._id);
 
     const token = createToken(user._id.toString(), user.email, "7d");
     const expires = new Date();
@@ -39,15 +50,19 @@ export const userSignUp = async (req: Request, res: Response): Promise<void> => 
       expires,
       httpOnly: true,
       signed: true,
-      sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",  // ✅
-      secure: process.env.NODE_ENV === "production" || true,  // ✅
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
+      secure: process.env.NODE_ENV === "production" || true,
     });
 
+    console.log("✅ 회원가입 완료");
     res.status(201).json({
       message: "회원가입 성공",
       user: { _id: user._id, nickname: user.nickname, email: user.email, createdAt: user.createdAt },
     });
   } catch (error: any) {
+    console.error("❌ 회원가입 에러:", error);
+    console.error("❌ 에러 메시지:", error.message);
+    console.error("❌ 에러 스택:", error.stack);
     res.status(500).json({ message: "서버 오류 발생", cause: error.message });
   }
 };
