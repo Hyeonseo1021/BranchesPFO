@@ -1,5 +1,5 @@
 // pages/ResumeResult.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
@@ -56,6 +56,8 @@ export default function ResumeResult() {
   const [template, setTemplate] = useState<'default' | 'modern'>('default');
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const resumeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchResume = async () => {
@@ -494,8 +496,8 @@ const renderTemplate = () => {
     }
   };
 
-  // 이력서 다운로드 (HTML)
-  const handleDownload = () => {
+  // HTML 다운로드
+  const handleDownloadHTML = () => {
     if (!resumeData) return;
 
     // 현재 렌더링된 이력서 HTML 가져오기
@@ -543,6 +545,97 @@ const renderTemplate = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setShowDownloadModal(false);
+  };
+
+  // PDF 다운로드
+  const handleDownloadPDF = async () => {
+    if (!resumeRef.current || !resumeData) return;
+
+    try {
+      // html2canvas와 jsPDF를 동적으로 import
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+
+      const resumeElement = resumeRef.current;
+
+      if (!resumeElement) {
+        alert('이력서 내용을 가져올 수 없습니다.');
+        return;
+      }
+
+      // 이력서 전체를 캡처
+      const canvas = await html2canvas(resumeElement, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        windowWidth: resumeElement.scrollWidth * 2,
+        windowHeight: resumeElement.scrollHeight * 2
+      } as any);
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 0;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`${resumeData.personal?.name || '이력서'}_${template === 'modern' ? '모던' : '기본'}.pdf`);
+      setShowDownloadModal(false);
+    } catch (error) {
+      console.error('PDF 생성 실패:', error);
+      alert('PDF 생성에 실패했습니다. 대신 HTML 형식으로 다운로드해주세요.');
+    }
+  };
+
+  // 이미지 다운로드
+  const handleDownloadImage = async () => {
+    if (!resumeRef.current || !resumeData) return;
+
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+
+      const resumeElement = resumeRef.current;
+
+      if (!resumeElement) {
+        alert('이력서 내용을 가져올 수 없습니다.');
+        return;
+      }
+
+      const canvas = await html2canvas(resumeElement, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        windowWidth: resumeElement.scrollWidth * 2,
+        windowHeight: resumeElement.scrollHeight * 2
+      } as any);
+
+      canvas.toBlob((blob: Blob | null) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${resumeData.personal?.name || '이력서'}_${template === 'modern' ? '모던' : '기본'}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+
+      setShowDownloadModal(false);
+    } catch (error) {
+      console.error('이미지 생성 실패:', error);
+      alert('이미지 생성에 실패했습니다.');
+    }
   };
 
   if (!resumeData) {
@@ -588,7 +681,7 @@ const renderTemplate = () => {
       </div>
 
       {/* ✅ 템플릿 표시 */}
-      <div className="flex justify-center flex-wrap gap-6 my-10 px-4 resume-content">
+      <div ref={resumeRef} className="flex justify-center flex-wrap gap-6 my-10 px-4 resume-content">
         {renderTemplate()}
       </div>
 
@@ -596,23 +689,90 @@ const renderTemplate = () => {
       <div className="flex justify-center gap-4 mb-10">
         <button
           onClick={() => navigate(`/resume/edit/${resumeId}`)}
-          className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition-all"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-all"
         >
-          수정하기
+          ✏️ 수정하기
         </button>
         <button
-          onClick={handleDownload}
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-all"
+          onClick={() => setShowDownloadModal(true)}
+          className="bg-gray-700 text-white px-6 py-2 rounded-lg shadow-md hover:bg-gray-800 transition-all"
         >
-          다운로드
+          💾 다운로드
         </button>
         <button
           onClick={handleDelete}
-          className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition-all"
+          className="bg-red-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-red-700 transition-all"
         >
-          삭제하기
+          🗑️ 삭제하기
         </button>
       </div>
+
+      {/* 다운로드 형식 선택 모달 */}
+      {showDownloadModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
+            <h3 className="text-2xl font-bold mb-6 text-center text-gray-800">
+              다운로드 형식 선택
+            </h3>
+            <p className="text-sm text-gray-600 text-center mb-6">
+              이력서를 어떤 형식으로 저장하시겠습니까?
+            </p>
+
+            <div className="space-y-3">
+              {/* HTML 다운로드 */}
+              <button
+                onClick={handleDownloadHTML}
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4 rounded-lg shadow-md hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-105 flex items-center justify-between"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-2xl">📄</span>
+                  <div className="text-left">
+                    <div className="font-bold">HTML 파일</div>
+                    <div className="text-xs opacity-90">웹 브라우저에서 열 수 있는 파일</div>
+                  </div>
+                </span>
+                <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded">추천</span>
+              </button>
+
+              {/* PDF 다운로드 */}
+              <button
+                onClick={handleDownloadPDF}
+                className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 rounded-lg shadow-md hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 flex items-center"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-2xl">📕</span>
+                  <div className="text-left">
+                    <div className="font-bold">PDF 파일</div>
+                    <div className="text-xs opacity-90">인쇄하기 좋은 문서 형식</div>
+                  </div>
+                </span>
+              </button>
+
+              {/* 이미지 다운로드 */}
+              <button
+                onClick={handleDownloadImage}
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 flex items-center"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-2xl">🖼️</span>
+                  <div className="text-left">
+                    <div className="font-bold">이미지 파일 (PNG)</div>
+                    <div className="text-xs opacity-90">SNS 공유나 미리보기용</div>
+                  </div>
+                </span>
+              </button>
+            </div>
+
+            {/* 취소 버튼 */}
+            <button
+              onClick={() => setShowDownloadModal(false)}
+              className="w-full mt-4 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition"
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
