@@ -509,7 +509,6 @@ export const deletePortfolio = async (req: Request, res: Response): Promise<void
   }
 };
 
-// ✅ 포트폴리오 AI 재생성 (프롬프트 기반 수정)
 export const regeneratePortfolio = async (req: Request, res: Response): Promise<void> => {
   try {
     const { portfolioId } = req.params;
@@ -532,7 +531,6 @@ export const regeneratePortfolio = async (req: Request, res: Response): Promise<
       return;
     }
 
-    // 본인 확인
     if (portfolio.user.toString() !== res.locals.jwtData?.id) {
       res.status(403).json({ message: "권한이 없습니다." });
       return;
@@ -541,56 +539,150 @@ export const regeneratePortfolio = async (req: Request, res: Response): Promise<
     console.log('🔄 포트폴리오 재생성 시작:', portfolioId);
     console.log('📝 사용자 요청:', userPrompt);
 
-    // 기존 포트폴리오 데이터 활용
-    const regeneratePrompt = `당신은 세계적인 웹 디자이너입니다.
-기존 포트폴리오를 다음 요청사항에 따라 수정해주세요.
+    // ✅ 프로젝트가 있는지 확인
+    const hasProjects = portfolio.projects && portfolio.projects.length > 0;
+
+    // ✅ 사용자 특성 분석
+    const userCharacteristics = [];
+    if (portfolio.introductionKeywords?.positions?.length) {
+      userCharacteristics.push(`희망 포지션: ${portfolio.introductionKeywords.positions.join(', ')}`);
+    }
+    if (portfolio.introductionKeywords?.strengths?.length) {
+      userCharacteristics.push(`핵심 강점: ${portfolio.introductionKeywords.strengths.join(', ')}`);
+    }
+    if (portfolio.introductionKeywords?.interests?.length) {
+      userCharacteristics.push(`관심 분야: ${portfolio.introductionKeywords.interests.join(', ')}`);
+    }
+    if (portfolio.introductionKeywords?.goals?.length) {
+      userCharacteristics.push(`목표: ${portfolio.introductionKeywords.goals.join(', ')}`);
+    }
+
+    const regeneratePrompt = `당신은 세계적인 웹 디자이너이자 프론트엔드 개발자입니다.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 사용자의 수정 요청사항
+🎯 사용자의 수정 요청사항 (최우선으로 반영!)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${userPrompt}
 
+⚠️ **중요**: 
+- 위 요청사항을 최우선으로 반영하세요
+- 기존 포트폴리오의 전반적인 스타일과 느낌은 유지하되, 요청된 부분만 수정하세요
+- 요청이 "전체 디자인 변경"이면 완전히 새로운 스타일로 만드세요
+⚠️ **반드시 확인할 사항**:
+1. 네비게이션 로고: 
+   - HTML 엔티티(&lt;, &gt;)나 특수문자(<, >, /)를 사용하지 마세요
+   - 단순하고 깔끔하게 이름만 표시하세요
+   - 예: ${portfolio.name} (추가 기호 없이)
+   - 또는 창의적인 텍스트 로고를 사용하세요 (예: ${portfolio.name} | Portfolio)  
+2. 푸터 연도: 현재 연도는 ${new Date().getFullYear()}년입니다
+   - 푸터의 저작권 표시에 올바른 연도를 사용하세요
+   - 예: &copy; ${new Date().getFullYear()} ${portfolio.name}. 모든 권리 보유.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-<기존_포트폴리오_정보>
+<사용자_정보>
 이름: ${portfolio.name}
 이메일: ${portfolio.email}
 전화: ${portfolio.phone}
 
-기술 스택: ${portfolio.skills?.join(', ') || '정보 없음'}
-활용 툴: ${portfolio.tools?.join(', ') || '정보 없음'}
+<사용자_특성>
+${userCharacteristics.join('\n')}
+</사용자_특성>
 
-${portfolio.projects && portfolio.projects.length > 0 ? `
-프로젝트:
-${portfolio.projects.map((p: any, idx: number) => `
+<프로젝트_경험>
+${hasProjects ? portfolio.projects.map((p: any, idx: number) => `
 ${idx + 1}. ${p.title}
    - 설명: ${p.description}
    - 역할: ${p.role}
    - 기술스택: ${p.techStack?.join(', ')}
    - 기간: ${p.period}
    - 링크: ${p.link || '없음'}
+`).join('\n') : '프로젝트 정보 없음'}
+</프로젝트_경험>
+
+<기술_및_도구>
+기술 스택: ${portfolio.skills?.join(', ') || '정보 없음'}
+활용 툴: ${portfolio.tools?.join(', ') || '정보 없음'}
+</기술_및_도구>
+
+${portfolio.experiences && portfolio.experiences.length > 0 ? `
+<경력>
+${portfolio.experiences.map((e: any, idx: number) => `
+${idx + 1}. ${e.company} - ${e.position}
+   - 기간: ${e.period}
+   - 설명: ${e.description}
 `).join('\n')}
+</경력>
 ` : ''}
-</기존_포트폴리오_정보>
+
+${portfolio.education && portfolio.education.length > 0 ? `
+<학력>
+${portfolio.education.map((e: any, idx: number) => `
+${idx + 1}. ${e.school} ${e.major ? `- ${e.major}` : ''}
+   - ${e.degree || ''} (${e.period})
+`).join('\n')}
+</학력>
+` : ''}
+
+${portfolio.certificates && portfolio.certificates.length > 0 ? `
+<자격증>
+${portfolio.certificates.map((c: any) => `- ${c.name} (${c.issuedBy}, ${c.date})`).join('\n')}
+</자격증>
+` : ''}
+</사용자_정보>
 
 ---
 
-# 중요 지침
-1. **사용자의 요청사항을 최우선**으로 반영하세요
-2. 기존 정보(이름, 프로젝트 등)는 그대로 유지하되, 디자인/스타일만 변경하세요
-3. 완전한 HTML 문서를 생성하세요 (<!DOCTYPE html>부터 </html>까지)
-4. Tailwind CSS를 사용하고, 필요시 <style> 태그에 커스텀 CSS 추가
-5. 반응형 디자인을 적용하세요
-6. 요청사항이 모호하면, 가장 적절한 방식으로 해석하여 적용하세요
+# 📋 필수 요구사항
 
-**반드시 완전한 HTML 코드만 출력하세요. 설명이나 마크다운은 포함하지 마세요.**`;
+1. **완전한 HTML 문서** 생성 (<!DOCTYPE html>부터 시작)
 
-    // Claude API 호출
+2. **반응형 디자인** 
+   - 모바일 (320px~768px)
+   - 태블릿 (768px~1024px)
+   - 데스크톱 (1024px+)
+
+3. **섹션 구성**
+   - 🌟 Hero Section: 첫인상이 강렬하게
+   - 👤 About Me: ${portfolio.name}님의 개성과 특성을 스토리텔링으로
+   - 💼 Projects: 프로젝트를 시각적으로 매력적이게 배치
+   - 🛠️ Skills & Tools: 독특한 방식으로 시각화
+   - 📞 Contact: 연락처 섹션
+
+4. **프로젝트 카드**
+   - 각 프로젝트마다 고유한 느낌
+   - 호버/클릭 인터랙션
+   - 기술스택 태그는 색상별로 차별화
+   - 링크가 있으면 버튼 추가
+
+5. **스타일**
+   - 모든 CSS는 <style> 태그 내부에 작성
+   - 외부 라이브러리 사용 금지 (단, Font Awesome CDN은 허용)
+   - Google Fonts 사용 가능
+
+6. **한국어로 작성**
+
+7. **JavaScript 기능 (선택)**
+   - 부드러운 스크롤 네비게이션
+   - 스크롤 애니메이션
+   - 모바일 메뉴 토글
+   - 다크모드 토글 (요청 시)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔥 다시 한번 강조: 사용자의 요청사항을 반드시 반영하세요!
+"${userPrompt}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+---
+
+🚀 **${portfolio.name}님만의 개성이 드러나는 포트폴리오를 만들어주세요!**
+⚠️ **중요: HTML 코드만 출력하세요. \`\`\`html 같은 마크다운 코드 블록 마커는 절대 사용하지 마세요. <!DOCTYPE html>부터 바로 시작하세요.**`;
+
+    console.log('🤖 Claude API 호출 시작...');
     const generatedHTML = await generatePortfolioWithClaude(regeneratePrompt);
+    console.log('🤖 Claude 응답 완료');
 
-    // 포트폴리오 업데이트
     portfolio.generatedContent = generatedHTML;
-    portfolio.userPrompt = userPrompt; // 수정 요청사항 저장
+    portfolio.userPrompt = userPrompt;
     await portfolio.save();
 
     console.log('✅ 포트폴리오 재생성 완료');
