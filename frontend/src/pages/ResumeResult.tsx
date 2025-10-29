@@ -470,6 +470,73 @@ const renderTemplate = () => {
     );
   }
 
+  // 이력서 삭제
+  const handleDelete = async () => {
+    if (!window.confirm('정말 이력서를 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      await axiosInstance.delete(`/resume/${resumeId}`);
+      alert('이력서가 삭제되었습니다.');
+      navigate('/mypage');
+    } catch (error) {
+      console.error('이력서 삭제 실패:', error);
+      alert('이력서 삭제에 실패했습니다.');
+    }
+  };
+
+  // 이력서 다운로드 (HTML)
+  const handleDownload = () => {
+    if (!resumeData) return;
+
+    // 현재 렌더링된 이력서 HTML 가져오기
+    const resumeElement = document.querySelector('.resume-content');
+    if (!resumeElement) {
+      alert('이력서 내용을 찾을 수 없습니다.');
+      return;
+    }
+
+    // HTML 문서 생성
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${resumeData.personal?.name || '이력서'} - 이력서</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      @page {
+        size: A4;
+        margin: 0;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  ${resumeElement.innerHTML}
+</body>
+</html>
+    `;
+
+    // Blob 생성 및 다운로드
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${resumeData.personal?.name || '이력서'}_${template === 'modern' ? '모던' : '기본'}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (!resumeData) {
     return <div>이력서 데이터가 없습니다.</div>;
   }
@@ -513,7 +580,7 @@ const renderTemplate = () => {
       </div>
 
       {/* ✅ 템플릿 표시 */}
-      <div className="flex justify-center flex-wrap gap-6 my-10 px-4">
+      <div className="flex justify-center flex-wrap gap-6 my-10 px-4 resume-content">
         {renderTemplate()}
       </div>
 
@@ -525,16 +592,18 @@ const renderTemplate = () => {
         >
           수정하기
         </button>
-          <button
-    className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-all"
-  >
-    다운로드
-  </button>
-    <button
-    className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition-all"
-  >
-    삭제하기
-  </button>
+        <button
+          onClick={handleDownload}
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-all"
+        >
+          다운로드
+        </button>
+        <button
+          onClick={handleDelete}
+          className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition-all"
+        >
+          삭제하기
+        </button>
       </div>
 
       <Footer />

@@ -107,7 +107,7 @@ export default function Login() {
             </div>
 
             <div className="flex justify-between mt-4 text-sm text-gray-600">
-              <a href="#" className="hover:underline">아이디/비밀번호 찾기</a>
+              <button type="button" onClick={() => alert('아이디/비밀번호 찾기 기능은 준비 중입니다.')} className="hover:underline">아이디/비밀번호 찾기</button>
               <Link to="/register" className="hover:underline">회원가입</Link>
             </div>
           </form>

@@ -5,12 +5,12 @@ import { Card, CardContent } from "../components/ui/card";
 
 export default function JobRecommendPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("전체");
-  const [jobs, setJobs] = useState([
+  const jobs = [
     { title: "백엔드 개발자", company: "삼성전자", location: "서울", tag: "IT" },
     { title: "프론트엔드 개발자", company: "네이버", location: "판교", tag: "IT" },
     { title: "UI/UX 디자이너", company: "카카오", location: "판교", tag: "디자인" },
     { title: "데이터 분석가", company: "LG CNS", location: "서울", tag: "데이터" },
-  ]);
+  ];
 
   const filteredJobs =
     selectedCategory === "전체"

@@ -19,13 +19,16 @@ export default function Register() {
       return;
     }
 
+    console.log("🔍 회원가입 요청 데이터:", { nickname, email, password: "***" });
+    console.log("🔍 API URL:", `${process.env.REACT_APP_API_URL}/auth/register`);
+
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/auth/register`, 
+        `${process.env.REACT_APP_API_URL}/auth/register`,
         {
-          nickname,   
-          email,     
-          password,        
+          nickname,
+          email,
+          password,
         },
         { withCredentials: true}
       );
@@ -34,8 +37,23 @@ export default function Register() {
       alert("회원가입 성공!");
       navigate("/login");
     } catch (error: any) {
-      console.error("❌ 회원가입 실패:", error.response?.data || error.message);
-      alert(error.response?.data?.message || "회원가입 실패");
+      console.error("❌ 회원가입 실패 - 전체 에러:", error);
+      console.error("❌ 응답 데이터:", error.response?.data);
+      console.error("❌ 상태 코드:", error.response?.status);
+
+      let errorMessage = "회원가입 실패";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.cause) {
+        // MongoDB 중복 키 오류 처리
+        if (error.response.data.cause.includes('dup key')) {
+          errorMessage = "이미 사용 중인 닉네임 또는 이메일입니다.";
+        } else {
+          errorMessage = error.response.data.cause;
+        }
+      }
+
+      alert(errorMessage);
     }
   };
 
