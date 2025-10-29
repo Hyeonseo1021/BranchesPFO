@@ -45,7 +45,7 @@ export default function PortfolioEdit() {
 
     setIsSaving(true);
     try {
-      const response = await axiosInstance.post(`/portfolio/${portfolioId}/regenerate`, {
+      await axiosInstance.post(`/portfolio/${portfolioId}/regenerate`, {
         userPrompt: editPrompt
       });
 
