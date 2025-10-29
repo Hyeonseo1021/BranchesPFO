@@ -6,13 +6,17 @@ import {
   getPortfolio,
   getMyPortfolios,
   updatePortfolio,
-  deletePortfolio
+  deletePortfolio,
+  regeneratePortfolio
 } from '../controllers/PortfolioController';
 
 const portfolioRoutes = Router();
 
 // 포트폴리오 생성
 portfolioRoutes.post('/generate', verifyToken, generatePortfolio);
+
+// 포트폴리오 AI 재생성
+portfolioRoutes.post('/:portfolioId/regenerate', verifyToken, regeneratePortfolio);
 
 // 내 포트폴리오 목록
 portfolioRoutes.get('/my-portfolio', verifyToken, getMyPortfolios);
