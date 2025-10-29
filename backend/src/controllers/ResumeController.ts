@@ -17,10 +17,10 @@ export const generateResume = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const { 
-      name, email, phone, desiredJob, address, certificates, experiences, 
+    const {
+      name, email, phone, desiredJob, address, certificates, experiences,
       introductionKeywords,  // ✅ introduction 대신 introductionKeywords
-      skills, tools, projects, education, birth, title 
+      skills, tools, projects, education, birth, title, photoUrl
     } = req.body;
 
     console.log('📥 받은 education:', education);
@@ -104,8 +104,9 @@ export const generateResume = async (req: Request, res: Response): Promise<void>
     const resumeDoc = await Resume.create({
       user: user._id,
       title: title || "AI 생성 이력서",
-      
+
       // ✅ 기본 정보 - req.body에서 직접
+      photoUrl: photoUrl || "",  // ✅ 프로필 사진 추가
       name: name || "",
       email: email || "",
       phone: phone || "",

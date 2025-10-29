@@ -122,6 +122,7 @@ export default function AIPFOPage() {
           birth: profile.birth || '',
           desiredJob: prompt || '백엔드 개발자',
           address: profile.address || '',
+          photoUrl: profile.avatar || '',  // ✅ 프로필 사진 (avatar 필드 사용)
           certificates: profile.certificates || [],
           experiences: profile.experiences || [],
           education: profile.education || [],

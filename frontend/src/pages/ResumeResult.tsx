@@ -6,6 +6,7 @@ import Footer from './Footer';
 import axiosInstance from '../api/axios';
 
 interface ResumeData {
+  photoUrl?: string;
   personal?: {
     name: string;
     birth: string;
@@ -65,6 +66,7 @@ export default function ResumeResult() {
         const resume = response.data.resume;
 
         const formattedData: ResumeData = {
+          photoUrl: resume.photoUrl || '',
           personal: {
             name: resume.name || '',
             birth: resume.birth || '',
@@ -238,7 +240,13 @@ const renderTemplate = () => {
             {/* 기본 정보 */}
             <div className="flex">
               <div className="w-[140px] border border-black flex flex-col items-center justify-center text-center p-2">
-                <div className="w-[100px] h-[130px] border border-black mb-2 flex items-center justify-center text-[12px]">사진</div>
+                <div className="w-[100px] h-[130px] border border-black mb-2 flex items-center justify-center text-[12px] overflow-hidden">
+                  {resumeData.photoUrl ? (
+                    <img src={resumeData.photoUrl} alt="프로필 사진" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-gray-400">사진</span>
+                  )}
+                </div>
                 <p className="text-[11px] text-red-500">응시직종 입력</p>
               </div>
               <div className="flex-1 border border-black border-l-0 px-4 py-3 text-[12px] flex flex-col justify-center gap-1">

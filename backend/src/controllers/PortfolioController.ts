@@ -497,13 +497,112 @@ export const deletePortfolio = async (req: Request, res: Response): Promise<void
       $pull: { portfolios: portfolioId }
     });
     
-    res.status(200).json({ 
-      message: "포트폴리오 삭제 완료" 
+    res.status(200).json({
+      message: "포트폴리오 삭제 완료"
     });
   } catch (error) {
     console.error("Portfolio delete error:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "서버 오류",
+      details: error instanceof Error ? error.message : "알 수 없는 오류"
+    });
+  }
+};
+
+// ✅ 포트폴리오 AI 재생성 (프롬프트 기반 수정)
+export const regeneratePortfolio = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { portfolioId } = req.params;
+    const { userPrompt } = req.body;
+
+    if (!res.locals.jwtData?.id) {
+      res.status(401).json({ message: "인증되지 않은 사용자입니다." });
+      return;
+    }
+
+    if (!userPrompt || !userPrompt.trim()) {
+      res.status(400).json({ message: "수정 요청 사항을 입력해주세요." });
+      return;
+    }
+
+    const portfolio = await Portfolio.findById(portfolioId);
+
+    if (!portfolio) {
+      res.status(404).json({ message: "포트폴리오를 찾을 수 없습니다." });
+      return;
+    }
+
+    // 본인 확인
+    if (portfolio.user.toString() !== res.locals.jwtData?.id) {
+      res.status(403).json({ message: "권한이 없습니다." });
+      return;
+    }
+
+    console.log('🔄 포트폴리오 재생성 시작:', portfolioId);
+    console.log('📝 사용자 요청:', userPrompt);
+
+    // 기존 포트폴리오 데이터 활용
+    const regeneratePrompt = `당신은 세계적인 웹 디자이너입니다.
+기존 포트폴리오를 다음 요청사항에 따라 수정해주세요.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 사용자의 수정 요청사항
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${userPrompt}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<기존_포트폴리오_정보>
+이름: ${portfolio.name}
+이메일: ${portfolio.email}
+전화: ${portfolio.phone}
+
+기술 스택: ${portfolio.skills?.join(', ') || '정보 없음'}
+활용 툴: ${portfolio.tools?.join(', ') || '정보 없음'}
+
+${portfolio.projects && portfolio.projects.length > 0 ? `
+프로젝트:
+${portfolio.projects.map((p: any, idx: number) => `
+${idx + 1}. ${p.title}
+   - 설명: ${p.description}
+   - 역할: ${p.role}
+   - 기술스택: ${p.techStack?.join(', ')}
+   - 기간: ${p.period}
+   - 링크: ${p.link || '없음'}
+`).join('\n')}
+` : ''}
+</기존_포트폴리오_정보>
+
+---
+
+# 중요 지침
+1. **사용자의 요청사항을 최우선**으로 반영하세요
+2. 기존 정보(이름, 프로젝트 등)는 그대로 유지하되, 디자인/스타일만 변경하세요
+3. 완전한 HTML 문서를 생성하세요 (<!DOCTYPE html>부터 </html>까지)
+4. Tailwind CSS를 사용하고, 필요시 <style> 태그에 커스텀 CSS 추가
+5. 반응형 디자인을 적용하세요
+6. 요청사항이 모호하면, 가장 적절한 방식으로 해석하여 적용하세요
+
+**반드시 완전한 HTML 코드만 출력하세요. 설명이나 마크다운은 포함하지 마세요.**`;
+
+    // Claude API 호출
+    const generatedHTML = await generatePortfolioWithClaude(regeneratePrompt);
+
+    // 포트폴리오 업데이트
+    portfolio.generatedContent = generatedHTML;
+    portfolio.userPrompt = userPrompt; // 수정 요청사항 저장
+    await portfolio.save();
+
+    console.log('✅ 포트폴리오 재생성 완료');
+
+    res.status(200).json({
+      message: "포트폴리오가 수정되었습니다!",
+      portfolio
+    });
+  } catch (error) {
+    console.error("❌ Portfolio regenerate error:", error);
+    res.status(500).json({
+      message: "포트폴리오 수정에 실패했습니다.",
       details: error instanceof Error ? error.message : "알 수 없는 오류"
     });
   }
