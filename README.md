@@ -24,10 +24,6 @@ AI-Powered Portfolio Website
 # 설치
 
 ```bash
-# 저장소 클론
-git clone https://github.com/yourusername/pfo-platform.git
-cd pfo-platform
-
 # Backend 설정
 cd backend
 npm install
