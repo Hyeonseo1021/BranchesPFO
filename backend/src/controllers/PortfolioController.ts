@@ -345,9 +345,6 @@ export const getPortfolio = async (req: Request, res: Response): Promise<void> =
       res.status(403).json({ message: "권한이 없습니다." });
       return;
     }
-    
-    // 조회수 증가
-    portfolio.viewCount = (portfolio.viewCount || 0) + 1;
     await portfolio.save();
     
     res.status(200).json({ 
@@ -374,7 +371,7 @@ export const getMyPortfolios = async (req: Request, res: Response): Promise<void
     const userId = res.locals.jwtData?.id;
     const portfolios = await Portfolio.find({ user: userId })
       .sort({ createdAt: -1 })
-      .select('title createdAt updatedAt viewCount');
+      .select('title createdAt updatedAt');
     
     res.status(200).json({ 
       message: "포트폴리오 목록 조회 성공",

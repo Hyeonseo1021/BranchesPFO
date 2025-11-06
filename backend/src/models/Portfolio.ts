@@ -68,19 +68,11 @@ const PortfolioSchema = new mongoose.Schema({
     type: String,  // HTML 또는 마크다운
     default: ''
   },
-
-  // 메타 정보
   status: {
     type: String,
     enum: ['draft', 'published'],
     default: 'draft'
-  },
-
-  viewCount: {
-    type: Number,
-    default: 0
   }
-
 }, {
   timestamps: true
 });
