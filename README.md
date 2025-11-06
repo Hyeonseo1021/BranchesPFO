@@ -24,6 +24,9 @@ AI-Powered Portfolio Website
 # 설치
 
 ```bash
+git clone https://github.com/Hyeonseo1021/BranchesPFO.git
+cd BranchesPFO
+
 # Backend 설정
 cd backend
 npm install
