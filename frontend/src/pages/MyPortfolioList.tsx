@@ -8,7 +8,6 @@ import axiosInstance from '../api/axios';
 interface Portfolio {
   _id: string;
   title: string;
-  viewCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -104,14 +103,9 @@ export default function MyPortfolioList() {
                   <p className="text-sm text-gray-600 mb-1">
                     생성일: {formatDate(portfolio.createdAt)}
                   </p>
-                  <p className="text-sm text-gray-600 mb-1">
+                  <p className="text-sm text-gray-600 mb-4">
                     수정일: {formatDate(portfolio.updatedAt)}
                   </p>
-                  {portfolio.viewCount !== undefined && (
-                    <p className="text-sm text-gray-600 mb-4">
-                      조회수: {portfolio.viewCount}회
-                    </p>
-                  )}
                 </div>
                 
                 <div className="flex gap-2">
