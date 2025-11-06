@@ -8,26 +8,45 @@ interface Post {
   _id: string;
   title: string;
   content: string;
-  author?: { nickname: string; id: string };
+  author?: { nickname: string; id: string; _id?: string };
   createdAt: string;
 }
 
 interface Comment {
   _id: string;
-  author?: { nickname: string; id: string };
+  author?: { nickname: string; id: string; _id?: string };
   content: string;
   createdAt: string;
 }
 
 export default function CmDetail() {
   const navigate = useNavigate();
-  const { id } = useParams(); // URL에서 게시글 ID
+  const { id } = useParams();
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // 📌 게시글 가져오기 (쿠키 포함)
+  // 현재 로그인한 사용자 정보 가져오기
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await axiosInstance.get('/auth/me');
+        // ✅ user._id 또는 _id로 접근
+        const userId = res.data.user?._id || res.data._id || res.data.id;
+        console.log('현재 사용자 ID:', userId);
+        console.log('전체 응답:', res.data);
+        setCurrentUserId(userId);
+      } catch (err) {
+        console.error('사용자 정보 가져오기 실패:', err);
+        // 로그인하지 않은 경우 null로 유지
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+  // 게시글 가져오기
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -42,7 +61,7 @@ export default function CmDetail() {
     fetchPost();
   }, [id]);
 
-  // 📌 댓글 가져오기 (쿠키 포함)
+  // 댓글 가져오기
   useEffect(() => {
     const fetchComments = async () => {
       try {
@@ -55,7 +74,49 @@ export default function CmDetail() {
     if (id) fetchComments();
   }, [id]);
 
-  // 📌 댓글 작성 (쿠키 인증 포함)
+  // 게시글 삭제
+  const handleDeletePost = async () => {
+    if (!window.confirm('게시글을 삭제하시겠습니까?')) return;
+
+    try {
+      await axiosInstance.delete(`/community/posts/${id}`);
+      alert('게시글이 삭제되었습니다.');
+      navigate('/community');
+    } catch (err: any) {
+      console.error('게시글 삭제 실패:', err);
+      if (err.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+      } else if (err.response?.status === 404) {
+        alert('게시글을 찾을 수 없거나 삭제할 권한이 없습니다.');
+      } else {
+        alert(err.response?.data?.message || '게시글 삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
+
+    try {
+      await axiosInstance.delete(`/community/comments/${commentId}`);
+      setComments((prev) => prev.filter((c) => c._id !== commentId));
+      alert('댓글이 삭제되었습니다.');
+    } catch (err: any) {
+      console.error('댓글 삭제 실패:', err);
+      if (err.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+      } else if (err.response?.status === 404) {
+        alert('댓글을 찾을 수 없거나 삭제할 권한이 없습니다.');
+      } else {
+        alert(err.response?.data?.message || '댓글 삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  // 댓글 작성
   const handleAddComment = async () => {
     if (newComment.trim() === '') {
       alert('댓글 내용을 입력해주세요.');
@@ -67,23 +128,20 @@ export default function CmDetail() {
       console.log('게시글 ID:', id);
       console.log('댓글 내용:', newComment);
       
-      // ✅ axiosInstance 사용 + body에 데이터 전달
       const res = await axiosInstance.post(`/community/posts/${id}/comments`, {
-        content: newComment  // ✅ 댓글 내용 전달
+        content: newComment
       });
       
       console.log('✅ 댓글 작성 성공:', res.data);
       
-      // ✅ axios는 res.data로 접근
-      setComments((prev) => [...prev, res.data]); // 새 댓글 추가
-      setNewComment(''); // 입력창 초기화
+      setComments((prev) => [...prev, res.data]);
+      setNewComment('');
       
       alert('댓글이 작성되었습니다.');
     } catch (err: any) {
       console.error('❌ 댓글 작성 실패:', err);
       console.error('에러 상세:', err.response?.data);
       
-      // ✅ 401 에러는 catch에서 처리
       if (err.response?.status === 401) {
         alert('로그인이 필요합니다.');
         navigate('/login');
@@ -107,6 +165,17 @@ export default function CmDetail() {
   if (loading) return <p className="text-center mt-20">게시글 불러오는 중...</p>;
   if (!post) return <p className="text-center mt-20">게시글을 찾을 수 없습니다.</p>;
 
+  // 현재 사용자가 게시글 작성자인지 확인 (_id 또는 id로 비교)
+  const postAuthorId = post.author?._id || post.author?.id;
+  const isPostAuthor = currentUserId && postAuthorId && (postAuthorId === currentUserId);
+  
+  console.log('게시글 작성자 확인:', {
+    currentUserId,
+    postAuthorId,
+    isPostAuthor,
+    postAuthor: post.author
+  });
+
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
       <Header />
@@ -116,21 +185,22 @@ export default function CmDetail() {
         <h2 className="text-2xl font-bold mb-4 border-b pb-2">{post.title}</h2>
 
         {/* 작성자 + 날짜 */}
-<div className="flex justify-between items-center text-sm text-gray-500 mb-6">
-  <div>
-    <span>글쓴이: {post.author?.nickname || '익명'}</span>
-    <span className="ml-4">작성일자: {new Date(post.createdAt).toLocaleDateString()}</span>
-  </div>
+        <div className="flex justify-between items-center text-sm text-gray-500 mb-6">
+          <div>
+            <span>글쓴이: {post.author?.nickname || '익명'}</span>
+            <span className="ml-4">작성일자: {new Date(post.createdAt).toLocaleDateString()}</span>
+          </div>
 
-  {/* 삭제 버튼 (연동은 아직 없음) */}
-  <button
-    onClick={() => alert('삭제 기능은 추후 백엔드 연동 예정입니다.')}
-    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
-  >
-    삭제
-  </button>
-</div>
-
+          {/* 삭제 버튼 - 작성자만 표시 */}
+          {isPostAuthor && (
+            <button
+              onClick={handleDeletePost}
+              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+            >
+              삭제
+            </button>
+          )}
+        </div>
 
         {/* 본문 */}
         <div className="text-base text-gray-700 leading-relaxed mb-10">{post.content}</div>
@@ -138,34 +208,41 @@ export default function CmDetail() {
         {/* 댓글 리스트 */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-4">댓글</h3>
-<ul className="space-y-3">
-  {comments.length === 0 ? (
-    <p className="text-sm text-gray-400">아직 댓글이 없습니다.</p>
-  ) : (
-    comments.map((comment) => (
-      <li key={comment._id} className="border-b pb-2">
-        <div className="flex justify-between items-start">
-          {/* 댓글 내용 */}
-          <p className="text-sm text-gray-700">{comment.content}</p>
+          <ul className="space-y-3">
+            {comments.length === 0 ? (
+              <p className="text-sm text-gray-400">아직 댓글이 없습니다.</p>
+            ) : (
+              comments.map((comment) => {
+                // 현재 사용자가 댓글 작성자인지 확인 (_id 또는 id로 비교)
+                const commentAuthorId = comment.author?._id || comment.author?.id;
+                const isCommentAuthor = currentUserId && commentAuthorId && (commentAuthorId === currentUserId);
 
-          {/* 삭제 버튼 (연동은 아직 없음) */}
-          <button
-            onClick={() => alert('댓글 삭제 기능은 추후 백엔드 연동 예정입니다.')}
-            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs ml-2"
-          >
-            삭제
-          </button>
-        </div>
+                return (
+                  <li key={comment._id} className="border-b pb-2">
+                    <div className="flex justify-between items-start">
+                      {/* 댓글 내용 */}
+                      <p className="text-sm text-gray-700">{comment.content}</p>
 
-        <p className="text-xs text-gray-400 mt-1">
-          작성자: {comment.author?.nickname || '익명'} |{' '}
-          {new Date(comment.createdAt).toLocaleDateString()}
-        </p>
-      </li>
-    ))
-  )}
-</ul>
+                      {/* 삭제 버튼 - 작성자만 표시 */}
+                      {isCommentAuthor && (
+                        <button
+                          onClick={() => handleDeleteComment(comment._id)}
+                          className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs ml-2"
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
 
+                    <p className="text-xs text-gray-400 mt-1">
+                      작성자: {comment.author?.nickname || '익명'} |{' '}
+                      {new Date(comment.createdAt).toLocaleDateString()}
+                    </p>
+                  </li>
+                );
+              })
+            )}
+          </ul>
         </div>
 
         {/* 댓글 입력창 */}
